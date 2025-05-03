@@ -1,5 +1,5 @@
 import React from 'react';
-import { createBrowserRouter, RouterProvider } from 'react-router';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router';
 import { AuthProvider } from './features/auth/contexts/AuthProvider';
 import { ThemeProvider } from './shared/components/providers/ThemeProvider';
 import ProtectedRoute from './shared/routes/ProtectedRoute';
@@ -25,7 +25,7 @@ const routesConfig = [
     children: [
       {
         index: true,
-        element: <DashboardHomePage />
+        element: <Navigate to="/dashboard" replace />
       },
       {
         path: 'dashboard',

@@ -18,7 +18,7 @@ const LoginPage = () => {
   const location = useLocation();
 
   // Get the previous location or use dashboard as default
-  const from = location.state?.from?.pathname || '/';
+  const from = location.state?.from?.pathname || '/dashboard';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
