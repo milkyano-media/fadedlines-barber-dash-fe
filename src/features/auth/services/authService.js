@@ -1,5 +1,4 @@
 import v2Client from '@/api/clients/v2Client';
-import { API_ENDPOINTS } from '@/api/config/apiConfig';
 
 export const TOKEN_KEY = 'auth_token';
 export const USER_KEY = 'user_data';
@@ -17,14 +16,15 @@ export const authService = {
    */
   async login(credentials) {
     try {
-      const response = await v2Client.post(API_ENDPOINTS.AUTH.LOGIN, credentials);
+      const response = await v2Client.axiosInstance.post('/auth/login', credentials);
+      const data = response.data;
       
-      if (response.token) {
-        localStorage.setItem(TOKEN_KEY, response.token);
-        localStorage.setItem(USER_KEY, JSON.stringify(response.user));
+      if (data.token) {
+        localStorage.setItem(TOKEN_KEY, data.token);
+        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
       }
       
-      return response;
+      return data;
     } catch (error) {
       console.error('Login failed:', error);
       throw error;

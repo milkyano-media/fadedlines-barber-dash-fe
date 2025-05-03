@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router';
 import { Mail, Phone } from 'lucide-react';
-import { formatDate } from '@/utils/formatters';
+import dayjs from 'dayjs';
 
 const CustomerList = ({ customers }) => {
   if (!customers || customers.length === 0) {
@@ -36,7 +36,7 @@ const CustomerList = ({ customers }) => {
                 <div className="flex flex-col">
                   <span className="font-medium">{customer.name}</span>
                   <span className="text-xs text-muted-foreground">
-                    Last visit: {formatDate(customer.lastVisit)}
+                    Last visit: {dayjs(customer.lastVisit).format('MMM DD, YYYY')}
                   </span>
                 </div>
               </td>

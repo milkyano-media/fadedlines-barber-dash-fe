@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { API_BASE_URL, API_V1, REQUEST_TIMEOUT } from '../config/apiConfig';
+import { API_BASE_URL, API_V1 } from '../config/apiConfig';
 
 class ApiClient {
   constructor(baseURL) {
@@ -8,7 +8,7 @@ class ApiClient {
       headers: {
         'Content-Type': 'application/json'
       },
-      timeout: REQUEST_TIMEOUT
+      timeout: 30000  // 30 seconds
     });
 
     // Request interceptor
@@ -45,61 +45,6 @@ class ApiClient {
         return Promise.reject(error);
       }
     );
-  }
-
-  // GET request
-  async get(endpoint, config) {
-    try {
-      const response = await this.axiosInstance.get(endpoint, config);
-      return response.data;
-    } catch (error) {
-      console.error(`GET request to ${endpoint} failed:`, error);
-      throw error;
-    }
-  }
-
-  // POST request
-  async post(endpoint, data, config) {
-    try {
-      const response = await this.axiosInstance.post(endpoint, data, config);
-      return response.data;
-    } catch (error) {
-      console.error(`POST request to ${endpoint} failed:`, error);
-      throw error;
-    }
-  }
-
-  // PUT request
-  async put(endpoint, data, config) {
-    try {
-      const response = await this.axiosInstance.put(endpoint, data, config);
-      return response.data;
-    } catch (error) {
-      console.error(`PUT request to ${endpoint} failed:`, error);
-      throw error;
-    }
-  }
-
-  // DELETE request
-  async delete(endpoint, config) {
-    try {
-      const response = await this.axiosInstance.delete(endpoint, config);
-      return response.data;
-    } catch (error) {
-      console.error(`DELETE request to ${endpoint} failed:`, error);
-      throw error;
-    }
-  }
-
-  // PATCH request
-  async patch(endpoint, data, config) {
-    try {
-      const response = await this.axiosInstance.patch(endpoint, data, config);
-      return response.data;
-    } catch (error) {
-      console.error(`PATCH request to ${endpoint} failed:`, error);
-      throw error;
-    }
   }
 }
 

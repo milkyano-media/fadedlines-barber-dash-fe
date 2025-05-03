@@ -3,6 +3,13 @@ import { Link, Outlet } from 'react-router';
 import { useAuth } from '../../features/auth/hooks/useAuth';
 import Navigation from './Navigation';
 
+const menuItems = [
+  { path: '/dashboard', label: 'Dashboard' },
+  { path: '/customers', label: 'Customers' },
+  { path: '/campaigns', label: 'Campaigns' },
+  { path: '/conversions', label: 'Conversions' }
+];
+
 const DashboardLayout = () => {
   const { user } = useAuth();
 
@@ -20,38 +27,16 @@ const DashboardLayout = () => {
 
             <nav>
               <ul className='space-y-2'>
-                <li>
-                  <Link
-                    to='/dashboard'
-                    className='block py-2 px-4 rounded hover:bg-muted'
-                  >
-                    Dashboard
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to='/customers'
-                    className='block py-2 px-4 rounded hover:bg-muted'
-                  >
-                    Customers
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to='/campaigns'
-                    className='block py-2 px-4 rounded hover:bg-muted'
-                  >
-                    Campaigns
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to='/conversions'
-                    className='block py-2 px-4 rounded hover:bg-muted'
-                  >
-                    Conversions
-                  </Link>
-                </li>
+                {menuItems.map((item) => (
+                  <li key={item.path}>
+                    <Link
+                      to={item.path}
+                      className='block py-2 px-4 rounded hover:bg-muted'
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </nav>
           </div>

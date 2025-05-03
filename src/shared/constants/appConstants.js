@@ -1,16 +1,10 @@
 export const APP_NAME = 'Barber Dashboard';
 export const DEFAULT_PAGE_SIZE = 10;
-export const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 export const DATE_FORMAT = {
   SHORT: 'MMM DD, YYYY',
   LONG: 'MMMM DD, YYYY',
   WITH_TIME: 'MMM DD, YYYY HH:mm'
-};
-
-export const USER_ROLES = {
-  ADMIN: 'ADMIN',
-  SUPER_ADMIN: 'SUPER_ADMIN'
 };
 
 export const INFLUENCE_LEVELS = {

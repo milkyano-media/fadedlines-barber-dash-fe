@@ -7,9 +7,9 @@ import DashboardLayout from './shared/components/DashboardLayout';
 import LoginPage from './features/auth/LoginPage';
 import RegisterPage from './features/auth/RegisterPage';
 import DashboardHomePage from './features/dashboard-home/DashboardHomePage';
-import ProductsPage from './features/products/ProductsPage';
-import ProductDetailsPage from './features/products/ProductDetailsPage';
 import NotFoundPage from './features/not-found/NotFoundPage';
+import CustomersPage from './features/customers/CustomersPage';
+import CampaignsPage from './features/campaigns/CampaignsPage';
 
 // Route configuration array
 const routesConfig = [
@@ -30,12 +30,12 @@ const routesConfig = [
         element: <DashboardHomePage />
       },
       {
-        path: 'products',
-        element: <ProductsPage />
+        path: 'customers',
+        element: <CustomersPage />
       },
       {
-        path: 'products/:id',
-        element: <ProductDetailsPage />
+        path: 'campaigns',
+        element: <CampaignsPage />
       }
     ]
   },
