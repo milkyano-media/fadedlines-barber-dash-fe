@@ -1,6 +1,7 @@
 import React from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 import { AuthProvider } from './features/auth/contexts/AuthProvider';
+import { ThemeProvider } from './shared/components/providers/ThemeProvider';
 import ProtectedRoute from './shared/routes/ProtectedRoute';
 import PublicRoute from './shared/routes/PublicRoute';
 import DashboardLayout from './shared/components/DashboardLayout';
@@ -66,9 +67,11 @@ const router = createBrowserRouter(routesConfig);
 
 const App = () => {
   return (
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 

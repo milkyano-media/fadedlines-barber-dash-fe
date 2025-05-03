@@ -65,6 +65,8 @@ barber-dashboard/
 - [x] Set up ESLint and Prettier
 - [x] Create folder structure
 - [x] Configure environment variables
+- [x] Install and configure next-themes for dark mode
+- [x] Match FadedLine theme and UI design
 
 ### 2. Shared Infrastructure
 
@@ -74,15 +76,20 @@ barber-dashboard/
 - [x] Implement layout components (DashboardLayout, Navbar)
 - [x] Create common components (LoadingSpinner, ErrorMessage)
 - [x] Set up routing configuration
+- [x] Create ThemeProvider component
+- [x] Create ThemeToggle component
+- [x] Update Navigation with FadedLine design
+- [x] Update DashboardLayout with FadedLine design
 
 ### 3. Authentication Feature
 
 - [x] Create AuthContext and AuthProvider
 - [x] Implement useAuth hook
 - [x] Create auth service for API calls
-- [x] Build LoginPage component
+- [x] Build LoginPage component with FadedLine design
 - [x] Implement ProtectedRoute component
 - [x] Add token management
+- [x] Update LoginPage UI to match FadedLine with Shadcn components
 
 ### 4. Dashboard Home Feature
 

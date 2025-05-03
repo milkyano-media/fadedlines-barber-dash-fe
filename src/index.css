@@ -23,7 +23,7 @@
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 142 86% 28%;
-    --radius: 0.75rem;
+    --radius: 0.5rem;
     
     --chart-1: 139 65% 20%;
     --chart-2: 140 74% 44%;
@@ -63,7 +63,7 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
