@@ -72,7 +72,7 @@ barber-dashboard/
 
 - [x] Create API client configuration
 - [x] Set up authentication interceptor
-- [x] Create base UI components (Button, Card, Input, etc.)
+- [x] Create base UI components (Button, Card, Input, Select, etc.)
 - [x] Implement layout components (DashboardLayout, Navbar)
 - [x] Create common components (LoadingSpinner, ErrorMessage)
 - [x] Set up routing configuration
@@ -115,11 +115,13 @@ barber-dashboard/
 
 ### 7. Conversions Feature
 
-- [ ] Create ConversionsPage component
-- [ ] Implement ConversionsList
-- [ ] Create conversion service for API integration
-- [ ] Add pagination support
-- [ ] Prepare hooks for backend integration
+- [x] Create ConversionsPage component
+- [x] Implement ConversionsList
+- [x] Create conversion services and hooks
+- [x] Add filtering and search functionality
+- [x] Add ConversionsSummary component
+- [ ] Complete API integration
+- [ ] Test with real data
 
 ### 8. Testing and Quality Assurance
 
