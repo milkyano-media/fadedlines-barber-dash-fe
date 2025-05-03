@@ -15,7 +15,7 @@ const LoginPage = () => {
   // Get the previous location or use dashboard as default
   const from = location.state?.from?.pathname || '/dashboard';
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -25,18 +25,15 @@ const LoginPage = () => {
       return;
     }
 
-    // Dummy login
     try {
-      const userData = {
-        id: 1,
-        name: email.split('@')[0], // Use part of email as name for demo
-        email
-      };
-
-      login(userData);
+      await login({ email, password });
       navigate(from, { replace: true });
     } catch (err) {
-      setError('Invalid credentials');
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError('Login failed. Please check your credentials.');
+      }
     }
   };
 

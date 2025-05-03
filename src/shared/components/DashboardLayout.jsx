@@ -14,8 +14,8 @@ const DashboardLayout = () => {
           {/* Sidebar */}
           <div className='w-64 bg-white rounded shadow p-4 mr-6'>
             <div className='mb-6'>
-              <h2 className='text-xl font-bold'>Dashboard</h2>
-              <p className='text-sm text-gray-500'>Welcome, {user.name}</p>
+              <h2 className='text-xl font-bold'>Barber Dashboard</h2>
+              <p className='text-sm text-gray-500'>Welcome, {user?.name}</p>
             </div>
 
             <nav>
@@ -23,17 +23,33 @@ const DashboardLayout = () => {
                 <li>
                   <Link
                     to='/dashboard'
-                    className='block py-2 px-4 rounded hover:bg-gray-100'
+                    className='block py-2 px-4 rounded hover:bg-muted'
                   >
-                    Dashboard Home
+                    Dashboard
                   </Link>
                 </li>
                 <li>
                   <Link
-                    to='/products'
-                    className='block py-2 px-4 rounded hover:bg-gray-100'
+                    to='/customers'
+                    className='block py-2 px-4 rounded hover:bg-muted'
                   >
-                    Products
+                    Customers
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to='/campaigns'
+                    className='block py-2 px-4 rounded hover:bg-muted'
+                  >
+                    Campaigns
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to='/conversions'
+                    className='block py-2 px-4 rounded hover:bg-muted'
+                  >
+                    Conversions
                   </Link>
                 </li>
               </ul>

@@ -8,12 +8,12 @@ const Navigation = () => {
   return (
     <nav className='bg-gray-800 p-4'>
       <div className='container mx-auto flex justify-between items-center'>
-        <div className='text-white font-bold text-xl'>MyApp</div>
+        <div className='text-white font-bold text-xl'>Barber Dashboard</div>
         <ul className='flex space-x-4'>
           {isAuthenticated ? (
             <>
               <li className='text-white'>
-                <span className='mr-2'>Hi, {user.name}</span>
+                <span className='mr-2'>Hi, {user?.name}</span>
                 <button
                   onClick={logout}
                   className='bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-sm'
