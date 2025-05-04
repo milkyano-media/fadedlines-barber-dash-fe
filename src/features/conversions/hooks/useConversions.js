@@ -33,7 +33,7 @@ export function useConversions(options = {}) {
   // Fetch data whenever options change
   useEffect(() => {
     fetchConversions();
-  }, [options.page, options.search, options.influenceLevel, options.startDate, options.endDate, options.refreshKey]);
+  }, [options.page, options.search, options.influenceLevel, options.startDate, options.endDate]);
 
   // Fetch single conversion details
   const fetchConversion = useCallback(async (conversionSequenceId) => {

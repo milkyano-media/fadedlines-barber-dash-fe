@@ -21,8 +21,8 @@ const ConversionsPage = () => {
   const [influenceFilter, setInfluenceFilter] = useState(INFLUENCE_FILTERS.ALL);
   const [dateRange, setDateRange] = useState(DATE_RANGES.LAST_30_DAYS);
   
-  // Refresh trigger to force re-fetch
-  const [refreshKey, setRefreshKey] = useState(0);
+  // State for manual refresh status
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   // Debounce the search term to avoid excessive API calls
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
@@ -62,8 +62,7 @@ const ConversionsPage = () => {
     size: 10,
     search: deferredSearchTerm || undefined,
     influenceLevel: influenceFilter !== INFLUENCE_FILTERS.ALL ? influenceFilter : undefined,
-    ...getDateRangeParams(),
-    refreshKey // This ensures useEffect dependency triggers on refresh
+    ...getDateRangeParams()
   };
 
   // Use the conversions hook with simplified parameters
@@ -100,13 +99,34 @@ const ConversionsPage = () => {
     };
 
     fetchSummaryData();
-  }, [dateRange, refreshKey, fetchSummary]); // Only re-fetch on date range change or refresh
+  }, [dateRange, fetchSummary]); // Only re-fetch on date range change
 
-  // Handle refresh - update refresh key to trigger refetch
-  const handleRefresh = () => {
-    setRefreshKey(prev => prev + 1);
-    // Optionally reset to page 1 on refresh
-    setCurrentPage(1);
+  // Handle refresh - directly call fetch functions
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      // Reset to page 1 on refresh
+      setCurrentPage(1);
+      
+      // Refetch conversions with current filters
+      const refreshParams = {
+        page: 1,
+        size: 10,
+        search: deferredSearchTerm || undefined,
+        influenceLevel: influenceFilter !== INFLUENCE_FILTERS.ALL ? influenceFilter : undefined,
+        ...getDateRangeParams()
+      };
+      await fetchConversions(refreshParams);
+      
+      // Also refresh summary data
+      const { startDate, endDate } = getDateRangeParams();
+      const summary = await fetchSummary(startDate, endDate);
+      setSummaryData(summary);
+    } catch (err) {
+      console.error('Error refreshing data:', err);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   // Reset to page 1 when filters change (except when search is changing)
@@ -129,10 +149,10 @@ const ConversionsPage = () => {
         <Button 
           variant="outline" 
           onClick={handleRefresh} 
-          disabled={loading}
+          disabled={loading || isRefreshing}
           className="flex items-center gap-2"
         >
-          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-4 w-4 ${(loading || isRefreshing) ? 'animate-spin' : ''}`} />
           Refresh Data
         </Button>
       </div>
