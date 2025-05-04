@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -6,164 +6,103 @@ import { Select } from '@/components/ui/select';
 import { Calendar, TrendingUp, DollarSign, Users, RefreshCw } from 'lucide-react';
 import ConversionsList from './components/ConversionsList';
 import { DATE_RANGES, INFLUENCE_FILTERS } from './constants/conversionConstants';
+import { useConversions } from './hooks/useConversions';
+import dayjs from 'dayjs';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import ErrorMessage from '@/components/common/ErrorMessage';
 
 const ConversionsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [influenceFilter, setInfluenceFilter] = useState(INFLUENCE_FILTERS.ALL);
   const [dateRange, setDateRange] = useState(DATE_RANGES.LAST_30_DAYS);
-  const [isLoading, setIsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [summaryData, setSummaryData] = useState(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState(null);
 
-  // Dummy data - will be replaced with API data
-  const summaryData = {
-    totalConversions: 30,
-    adInfluencedCount: 24,
-    averageInfluenceScore: 65,
-    totalRevenue: 2850,
-  };
+  // Calculate date range for API calls
+  const getDateRangeParams = () => {
+    const now = dayjs();
+    let startDate = null;
+    let endDate = now.format('YYYY-MM-DD');
 
-  const conversionsData = [
-    {
-      id: 1,
-      conversionSequenceId: "5f0c935e-ea9e-4271-b02e-f3f27048bd65",
-      adsInfluenceScore: 50,
-      influenceCategory: "Partially influenced by ads",
-      campaignName: "spring_promo",
-      bookingId: "booking-123",
-      customerName: "John Smith",
-      serviceName: "Premium Cut & Style",
-      amount: 75,
-      teamMemberId: "TM123456",
-      createdAt: "2025-04-30T16:55:00.000Z",
-      details: {
-        events: [
-          {
-            eventName: "page_visit",
-            date: "2025-04-27 14:05",
-            pageUrl: "/?fbclid=IwAR987cba654zyx",
-            trafficSource: "FACEBOOK",
-            utm: null,
-            fbclid: "IwAR987cba654zyx",
-            score: 1,
-            sessionId: "session-123"
-          },
-          {
-            eventName: "page_visit",
-            date: "2025-04-29 19:20",
-            pageUrl: "/",
-            trafficSource: "DIRECT",
-            utm: null,
-            fbclid: null,
-            score: 0,
-            sessionId: "session-456"
-          },
-          {
-            eventName: "page_visit",
-            date: "2025-04-30 16:45",
-            pageUrl: "/?fbclid=IwAR543qwe876rty&utm_source=facebook&utm_medium=social&utm_campaign=spring_promo",
-            trafficSource: "FACEBOOK",
-            utm: "facebook/social/spring_promo/retargeting_ad_1",
-            fbclid: "IwAR543qwe876rty",
-            score: 2,
-            sessionId: "session-789"
-          },
-          {
-            eventName: "create_booking",
-            date: "2025-04-30 16:55",
-            pageUrl: "/book/contact-info",
-            trafficSource: "FACEBOOK",
-            utm: "facebook/social/spring_promo/retargeting_ad_1",
-            fbclid: "IwAR543qwe876rty",
-            score: 0,
-            sessionId: "session-789"
-          }
-        ],
-        score: {
-          totalPoints: 3,
-          totalVisits: 3,
-          maxPossiblePoints: 6,
-          scoreCalculation: "3 / (3 × 2) × 100% = 50%"
-        }
-      }
-    },
-    {
-      id: 2,
-      conversionSequenceId: "3a4b5c6d-7e8f-9a0b-1c2d-3e4f5a6b7c8d",
-      adsInfluenceScore: 100,
-      influenceCategory: "Strongly influenced by ads",
-      campaignName: "summer_cuts",
-      bookingId: "booking-456",
-      customerName: "Emma Johnson",
-      serviceName: "Premium Style & Cut",
-      amount: 55,
-      teamMemberId: "TM789012",
-      createdAt: "2025-04-30T13:48:00.000Z",
-      details: {
-        events: [
-          {
-            eventName: "page_visit",
-            date: "2025-04-29 09:05",
-            pageUrl: "/?fbclid=IwAR789xyz123abc&utm_source=facebook&utm_medium=social&utm_campaign=summer_cuts",
-            trafficSource: "FACEBOOK",
-            utm: "facebook/social/summer_cuts/carousel_ad_1",
-            fbclid: "IwAR789xyz123abc",
-            score: 2,
-            sessionId: "session-abc"
-          },
-          {
-            eventName: "page_visit",
-            date: "2025-04-30 13:40",
-            pageUrl: "/book/services",
-            trafficSource: "FACEBOOK",
-            utm: "facebook/social/summer_cuts/carousel_ad_1",
-            fbclid: "IwAR789xyz123abc",
-            score: 2,
-            sessionId: "session-def"
-          },
-          {
-            eventName: "create_booking",
-            date: "2025-04-30 13:48",
-            pageUrl: "/book/contact-info",
-            trafficSource: "FACEBOOK",
-            utm: "facebook/social/summer_cuts/carousel_ad_1",
-            fbclid: "IwAR789xyz123abc",
-            score: 0,
-            sessionId: "session-def"
-          }
-        ],
-        score: {
-          totalPoints: 4,
-          totalVisits: 2,
-          maxPossiblePoints: 4,
-          scoreCalculation: "4 / (2 × 2) × 100% = 100%"
-        }
-      }
+    switch (dateRange) {
+      case DATE_RANGES.LAST_7_DAYS:
+        startDate = now.subtract(7, 'day').format('YYYY-MM-DD');
+        break;
+      case DATE_RANGES.LAST_30_DAYS:
+        startDate = now.subtract(30, 'day').format('YYYY-MM-DD');
+        break;
+      case DATE_RANGES.LAST_90_DAYS:
+        startDate = now.subtract(90, 'day').format('YYYY-MM-DD');
+        break;
+      case DATE_RANGES.ALL_TIME:
+        // No start date for all time
+        break;
+      default:
+        startDate = now.subtract(30, 'day').format('YYYY-MM-DD');
     }
-  ];
 
-  const handleRefresh = () => {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+    return { startDate, endDate };
   };
 
-  // Filter conversions based on search and influence filter
-  const filteredConversions = conversionsData.filter(conversion => {
-    const matchesSearch = searchTerm === '' || 
-      conversion.bookingId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (conversion.teamMemberId && conversion.teamMemberId.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      conversion.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (conversion.campaignName && conversion.campaignName.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesInfluence = influenceFilter === INFLUENCE_FILTERS.ALL || 
-      (influenceFilter === INFLUENCE_FILTERS.STRONG && conversion.adsInfluenceScore >= 76) ||
-      (influenceFilter === INFLUENCE_FILTERS.SIGNIFICANT && conversion.adsInfluenceScore >= 51 && conversion.adsInfluenceScore <= 75) ||
-      (influenceFilter === INFLUENCE_FILTERS.PARTIAL && conversion.adsInfluenceScore >= 26 && conversion.adsInfluenceScore <= 50) ||
-      (influenceFilter === INFLUENCE_FILTERS.ORGANIC && conversion.adsInfluenceScore <= 25);
-    
-    return matchesSearch && matchesInfluence;
-  });
+  // Build query params object
+  const queryParams = {
+    page: currentPage,
+    size: 10,
+    search: searchTerm || undefined,
+    influenceLevel: influenceFilter !== INFLUENCE_FILTERS.ALL ? influenceFilter : undefined,
+    ...getDateRangeParams()
+  };
+
+  // Use the conversions hook
+  const {
+    conversions,
+    meta,
+    stats,
+    loading,
+    error,
+    fetchConversions,
+    fetchSummary
+  } = useConversions(queryParams);
+
+  // Fetch summary data
+  useEffect(() => {
+    const fetchSummaryData = async () => {
+      try {
+        setSummaryLoading(true);
+        setSummaryError(null);
+        const { startDate, endDate } = getDateRangeParams();
+        const summary = await fetchSummary(startDate, endDate);
+        setSummaryData(summary);
+      } catch (err) {
+        setSummaryError(err instanceof Error ? err : new Error('Failed to fetch summary'));
+        console.error('Error fetching summary:', err);
+      } finally {
+        setSummaryLoading(false);
+      }
+    };
+
+    fetchSummaryData();
+  }, [dateRange, fetchSummary]);
+
+  // Handle refresh
+  const handleRefresh = () => {
+    fetchConversions(queryParams);
+  };
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, influenceFilter, dateRange]);
+
+  // Stats to display (prefer stats from conversions hook, fallback to summary data)
+  const displayStats = stats || summaryData || {
+    totalConversions: 0,
+    adInfluencedCount: 0,
+    averageInfluenceScore: 0,
+    totalRevenue: 0
+  };
 
   return (
     <div className="space-y-6">
@@ -172,10 +111,10 @@ const ConversionsPage = () => {
         <Button 
           variant="outline" 
           onClick={handleRefresh} 
-          disabled={isLoading}
+          disabled={loading}
           className="flex items-center gap-2"
         >
-          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           Refresh Data
         </Button>
       </div>
@@ -187,10 +126,14 @@ const ConversionsPage = () => {
             <CardTitle className="text-sm font-medium">Total Conversions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold flex items-center gap-2">
-              {summaryData.totalConversions}
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </div>
+            {summaryLoading ? (
+              <LoadingSpinner size="small" />
+            ) : (
+              <div className="text-2xl font-bold flex items-center gap-2">
+                {displayStats.totalConversions}
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </div>
+            )}
           </CardContent>
         </Card>
         <Card>
@@ -198,13 +141,21 @@ const ConversionsPage = () => {
             <CardTitle className="text-sm font-medium">Ad Influenced</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold flex items-center gap-2">
-              {summaryData.adInfluencedCount}
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {Math.round((summaryData.adInfluencedCount / summaryData.totalConversions) * 100)}% of total
-            </p>
+            {summaryLoading ? (
+              <LoadingSpinner size="small" />
+            ) : (
+              <>
+                <div className="text-2xl font-bold flex items-center gap-2">
+                  {displayStats.adInfluencedCount}
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </div>
+                {displayStats.totalConversions > 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {Math.round((displayStats.adInfluencedCount / displayStats.totalConversions) * 100)}% of total
+                  </p>
+                )}
+              </>
+            )}
           </CardContent>
         </Card>
         <Card>
@@ -212,10 +163,14 @@ const ConversionsPage = () => {
             <CardTitle className="text-sm font-medium">Average Influence Score</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold flex items-center gap-2">
-              {summaryData.averageInfluenceScore}%
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </div>
+            {summaryLoading ? (
+              <LoadingSpinner size="small" />
+            ) : (
+              <div className="text-2xl font-bold flex items-center gap-2">
+                {displayStats.averageInfluenceScore}%
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+              </div>
+            )}
           </CardContent>
         </Card>
         <Card>
@@ -223,10 +178,14 @@ const ConversionsPage = () => {
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold flex items-center gap-2">
-              ${summaryData.totalRevenue}
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </div>
+            {summaryLoading ? (
+              <LoadingSpinner size="small" />
+            ) : (
+              <div className="text-2xl font-bold flex items-center gap-2">
+                ${displayStats.totalRevenue.toLocaleString()}
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -266,15 +225,64 @@ const ConversionsPage = () => {
         </div>
       </div>
 
+      {/* Error Message */}
+      {error && (
+        <ErrorMessage 
+          message={error.message || 'Failed to load conversions'} 
+          onRetry={handleRefresh}
+        />
+      )}
+
+      {/* Summary Error */}
+      {summaryError && (
+        <ErrorMessage 
+          message={summaryError.message || 'Failed to load summary data'} 
+          onRetry={() => {
+            const { startDate, endDate } = getDateRangeParams();
+            fetchSummary(startDate, endDate);
+          }}
+        />
+      )}
+
       {/* Conversions List */}
-      {isLoading ? (
+      {loading ? (
         <Card>
           <CardContent className="p-6 flex items-center justify-center min-h-[400px]">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            <LoadingSpinner size="large" />
           </CardContent>
         </Card>
       ) : (
-        <ConversionsList conversions={filteredConversions} />
+        <ConversionsList conversions={conversions} />
+      )}
+
+      {/* Pagination */}
+      {meta && meta.totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">
+            Showing {(currentPage - 1) * 10 + 1} to {Math.min(currentPage * 10, meta.totalElements)} of {meta.totalElements} conversions
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage <= 1 || loading}
+            >
+              Previous
+            </Button>
+            <span className="text-sm">
+              Page {currentPage} of {meta.totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(meta.totalPages, prev + 1))}
+              disabled={currentPage >= meta.totalPages || loading}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   );
