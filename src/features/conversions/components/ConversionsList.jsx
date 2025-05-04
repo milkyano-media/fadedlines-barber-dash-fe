@@ -49,11 +49,11 @@ const ConversionsList = ({ conversions }) => {
                       </td>
                       <td className='p-4 align-middle'>{conversion.customerName}</td>
                       <td className='p-4 align-middle'>
-                        {conversion.teamMemberId ? 
+                        {conversion.teamMemberName ? 
                           <span className="text-sm font-medium">
-                            {conversion.teamMemberId}
+                            {conversion.teamMemberName}
                           </span> : 
-                          'N/A'
+                          <span className="text-muted-foreground">Not assigned</span>
                         }
                       </td>
                       <td className='p-4 align-middle'>
@@ -207,10 +207,10 @@ const ConversionsList = ({ conversions }) => {
                               </div>
                               <div className='mt-2 sm:mt-0'>
                                 <h5 className='text-sm font-medium'>
-                                  Barber ID
+                                  Barber
                                 </h5>
                                 <p className='text-sm'>
-                                  {conversion.teamMemberId || 'Not assigned'}
+                                  {conversion.teamMemberName || 'Not assigned'}
                                 </p>
                               </div>
                               <div className='mt-2 sm:mt-0'>
