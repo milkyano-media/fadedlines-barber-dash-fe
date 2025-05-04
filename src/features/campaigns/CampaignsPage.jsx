@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
@@ -98,39 +104,54 @@ const CampaignsPage = () => {
 
   // Filter and sort campaigns
   const filteredCampaigns = allCampaigns
-    .filter(campaign => {
-      const matchesSearch = searchTerm === '' || 
+    .filter((campaign) => {
+      const matchesSearch =
+        searchTerm === '' ||
         campaign.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         campaign.utmSource.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesStatus = statusFilter === 'all' || campaign.status === statusFilter;
-      
+
+      const matchesStatus =
+        statusFilter === 'all' || campaign.status === statusFilter;
+
       return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
-      if (sortBy === 'conversionRate') return b.conversionRate - a.conversionRate;
+      if (sortBy === 'conversionRate')
+        return b.conversionRate - a.conversionRate;
       if (sortBy === 'visitCount') return b.visitCount - a.visitCount;
       if (sortBy === 'revenue') return b.revenue - a.revenue;
-      if (sortBy === 'influenceScore') return b.avgInfluenceScore - a.avgInfluenceScore;
-      if (sortBy === 'date') return new Date(b.startDate) - new Date(a.startDate);
+      if (sortBy === 'influenceScore')
+        return b.avgInfluenceScore - a.avgInfluenceScore;
+      if (sortBy === 'date')
+        return new Date(b.startDate) - new Date(a.startDate);
       return 0;
     });
 
   // Calculate summary statistics
-  const totalVisits = filteredCampaigns.reduce((sum, campaign) => sum + campaign.visitCount, 0);
-  const totalBookings = filteredCampaigns.reduce((sum, campaign) => sum + campaign.bookingCount, 0);
-  const averageConversion = totalVisits > 0 ? (totalBookings / totalVisits * 100).toFixed(1) : 0;
-  const totalRevenue = filteredCampaigns.reduce((sum, campaign) => sum + campaign.revenue, 0);
+  const totalVisits = filteredCampaigns.reduce(
+    (sum, campaign) => sum + campaign.visitCount,
+    0
+  );
+  const totalBookings = filteredCampaigns.reduce(
+    (sum, campaign) => sum + campaign.bookingCount,
+    0
+  );
+  const averageConversion =
+    totalVisits > 0 ? ((totalBookings / totalVisits) * 100).toFixed(1) : 0;
+  const totalRevenue = filteredCampaigns.reduce(
+    (sum, campaign) => sum + campaign.revenue,
+    0
+  );
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Campaign Analytics</h1>
-        <Button 
-          variant="outline" 
-          onClick={handleRefresh} 
+    <div className='space-y-6'>
+      <div className='flex justify-between items-center'>
+        <h1 className='text-3xl font-bold'>Campaign Analytics (Dummy)</h1>
+        <Button
+          variant='outline'
+          onClick={handleRefresh}
           disabled={isLoading}
-          className="flex items-center gap-2"
+          className='flex items-center gap-2'
         >
           <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
           Refresh Data
@@ -138,72 +159,76 @@ const CampaignsPage = () => {
       </div>
 
       {/* Summary Statistics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Visits</CardTitle>
+          <CardHeader className='pb-2'>
+            <CardTitle className='text-sm font-medium'>Total Visits</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalVisits}</div>
+            <div className='text-2xl font-bold'>{totalVisits}</div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
+          <CardHeader className='pb-2'>
+            <CardTitle className='text-sm font-medium'>
+              Total Bookings
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalBookings}</div>
+            <div className='text-2xl font-bold'>{totalBookings}</div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Average Conversion</CardTitle>
+          <CardHeader className='pb-2'>
+            <CardTitle className='text-sm font-medium'>
+              Average Conversion
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{averageConversion}%</div>
+            <div className='text-2xl font-bold'>{averageConversion}%</div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+          <CardHeader className='pb-2'>
+            <CardTitle className='text-sm font-medium'>Total Revenue</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalRevenue}</div>
+            <div className='text-2xl font-bold'>${totalRevenue}</div>
           </CardContent>
         </Card>
       </div>
 
       {/* Filters Section */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <div className='flex flex-col md:flex-row gap-4'>
+        <div className='relative flex-1'>
+          <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground' />
           <Input
-            placeholder="Search campaigns by name or source..."
+            placeholder='Search campaigns by name or source...'
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className='pl-10'
           />
         </div>
         <Select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="w-full md:w-[200px]"
+          className='w-full md:w-[200px]'
         >
-          <option value="all">All Status</option>
-          <option value="active">Active</option>
-          <option value="completed">Completed</option>
-          <option value="paused">Paused</option>
+          <option value='all'>All Status</option>
+          <option value='active'>Active</option>
+          <option value='completed'>Completed</option>
+          <option value='paused'>Paused</option>
         </Select>
         <Select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
-          className="w-full md:w-[200px]"
+          className='w-full md:w-[200px]'
         >
-          <option value="conversionRate">Sort by Conversion Rate</option>
-          <option value="visitCount">Sort by Visits</option>
-          <option value="revenue">Sort by Revenue</option>
-          <option value="influenceScore">Sort by Influence Score</option>
-          <option value="date">Sort by Start Date</option>
+          <option value='conversionRate'>Sort by Conversion Rate</option>
+          <option value='visitCount'>Sort by Visits</option>
+          <option value='revenue'>Sort by Revenue</option>
+          <option value='influenceScore'>Sort by Influence Score</option>
+          <option value='date'>Sort by Start Date</option>
         </Select>
       </div>
 
@@ -211,7 +236,8 @@ const CampaignsPage = () => {
         <CardHeader>
           <CardTitle>Marketing Campaigns</CardTitle>
           <CardDescription>
-            Track performance metrics for your marketing campaigns ({filteredCampaigns.length} campaigns)
+            Track performance metrics for your marketing campaigns (
+            {filteredCampaigns.length} campaigns)
           </CardDescription>
         </CardHeader>
         <CardContent>
