@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useDeferredValue } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -7,20 +7,30 @@ import { Calendar, TrendingUp, DollarSign, Users, RefreshCw } from 'lucide-react
 import ConversionsList from './components/ConversionsList';
 import { DATE_RANGES, INFLUENCE_FILTERS } from './constants/conversionConstants';
 import { useConversions } from './hooks/useConversions';
+import { useDebounce } from '@/hooks/useDebounce';
 import dayjs from 'dayjs';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 
 const ConversionsPage = () => {
+  // Page state
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  // Filter states  
   const [searchTerm, setSearchTerm] = useState('');
   const [influenceFilter, setInfluenceFilter] = useState(INFLUENCE_FILTERS.ALL);
   const [dateRange, setDateRange] = useState(DATE_RANGES.LAST_30_DAYS);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [summaryData, setSummaryData] = useState(null);
-  const [summaryLoading, setSummaryLoading] = useState(false);
-  const [summaryError, setSummaryError] = useState(null);
+  
+  // Refresh trigger to force re-fetch
+  const [refreshKey, setRefreshKey] = useState(0);
+  
+  // Debounce the search term to avoid excessive API calls
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  
+  // Use deferred value for better performance when typing
+  const deferredSearchTerm = useDeferredValue(debouncedSearchTerm);
 
-  // Calculate date range for API calls
+  // Calculate date range parameters
   const getDateRangeParams = () => {
     const now = dayjs();
     let startDate = null;
@@ -46,16 +56,17 @@ const ConversionsPage = () => {
     return { startDate, endDate };
   };
 
-  // Build query params object
+  // Build query params - use deferred search term to avoid excessive re-fetches
   const queryParams = {
     page: currentPage,
     size: 10,
-    search: searchTerm || undefined,
+    search: deferredSearchTerm || undefined,
     influenceLevel: influenceFilter !== INFLUENCE_FILTERS.ALL ? influenceFilter : undefined,
-    ...getDateRangeParams()
+    ...getDateRangeParams(),
+    refreshKey // This ensures useEffect dependency triggers on refresh
   };
 
-  // Use the conversions hook
+  // Use the conversions hook with simplified parameters
   const {
     conversions,
     meta,
@@ -66,7 +77,12 @@ const ConversionsPage = () => {
     fetchSummary
   } = useConversions(queryParams);
 
-  // Fetch summary data
+  // Summary data state (managed separately to avoid circular dependencies)
+  const [summaryData, setSummaryData] = useState(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState(null);
+
+  // Fetch summary data only when date range changes or on refresh
   useEffect(() => {
     const fetchSummaryData = async () => {
       try {
@@ -84,17 +100,19 @@ const ConversionsPage = () => {
     };
 
     fetchSummaryData();
-  }, [dateRange, fetchSummary]);
+  }, [dateRange, refreshKey, fetchSummary]); // Only re-fetch on date range change or refresh
 
-  // Handle refresh
+  // Handle refresh - update refresh key to trigger refetch
   const handleRefresh = () => {
-    fetchConversions(queryParams);
+    setRefreshKey(prev => prev + 1);
+    // Optionally reset to page 1 on refresh
+    setCurrentPage(1);
   };
 
-  // Reset to page 1 when filters change
+  // Reset to page 1 when filters change (except when search is changing)
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, influenceFilter, dateRange]);
+  }, [influenceFilter, dateRange]);
 
   // Stats to display (prefer stats from conversions hook, fallback to summary data)
   const displayStats = stats || summaryData || {

@@ -12,19 +12,13 @@ export function useConversions(options = {}) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchConversions = useCallback(async (opts = {}) => {
+  // Fetch conversions with current options
+  const fetchConversions = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Merge default options with provided options
-      const fetchOptions = {
-        page: options.page || 1,
-        size: options.size || 10,
-        ...opts
-      };
-
-      const response = await conversionsService.getConversions(fetchOptions);
+      const response = await conversionsService.getConversions(options);
       setConversions(response.data);
       setMeta(response.meta);
       setStats(response.stats);
@@ -36,41 +30,32 @@ export function useConversions(options = {}) {
     }
   }, [options]);
 
+  // Fetch data whenever options change
   useEffect(() => {
     fetchConversions();
-  }, [fetchConversions]);
+  }, [options.page, options.search, options.influenceLevel, options.startDate, options.endDate, options.refreshKey]);
 
-  const fetchConversion = async (conversionSequenceId) => {
+  // Fetch single conversion details
+  const fetchConversion = useCallback(async (conversionSequenceId) => {
     try {
-      setLoading(true);
-      setError(null);
-
       const response = await conversionsService.getConversionDetails(conversionSequenceId);
       return response.data;
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch conversion details'));
       console.error('Error fetching conversion details:', err);
       throw err;
-    } finally {
-      setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchSummary = async (startDate, endDate) => {
+  // Fetch summary data
+  const fetchSummary = useCallback(async (startDate, endDate) => {
     try {
-      setLoading(true);
-      setError(null);
-
       const response = await conversionsService.getConversionsSummary(startDate, endDate);
       return response.data;
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch conversions summary'));
       console.error('Error fetching conversions summary:', err);
       throw err;
-    } finally {
-      setLoading(false);
     }
-  };
+  }, []);
 
   return {
     conversions,
