@@ -62,7 +62,9 @@ export const conversionsService = {
       if (startDate) queryParams.append('startDate', startDate);
       if (endDate) queryParams.append('endDate', endDate);
 
+      console.log('Fetching summary with params:', { startDate, endDate });
       const response = await v2Client.axiosInstance.get(`/conversions/summary?${queryParams.toString()}`);
+      console.log('Summary API response:', response.data);
       return response.data;
     } catch (error) {
       console.error('Failed to fetch conversions summary:', error);

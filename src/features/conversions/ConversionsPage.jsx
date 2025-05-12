@@ -81,7 +81,7 @@ const ConversionsPage = () => {
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [summaryError, setSummaryError] = useState(null);
 
-  // Fetch summary data only when date range changes or on refresh
+  // Fetch summary data whenever date range changes or on page load
   useEffect(() => {
     const fetchSummaryData = async () => {
       try {
@@ -90,6 +90,9 @@ const ConversionsPage = () => {
         const { startDate, endDate } = getDateRangeParams();
         const summary = await fetchSummary(startDate, endDate);
         setSummaryData(summary);
+        
+        // Log successful summary fetch
+        console.log('Summary data fetched successfully:', summary);
       } catch (err) {
         setSummaryError(err instanceof Error ? err : new Error('Failed to fetch summary'));
         console.error('Error fetching summary:', err);
@@ -99,16 +102,22 @@ const ConversionsPage = () => {
     };
 
     fetchSummaryData();
-  }, [dateRange, fetchSummary]); // Only re-fetch on date range change
+  }, [dateRange, fetchSummary]); // Re-fetch when date range changes
 
-  // Handle refresh - directly call fetch functions
+  // Handle refresh - fetching summary data first, then conversions
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
       // Reset to page 1 on refresh
       setCurrentPage(1);
       
-      // Refetch conversions with current filters
+      // First refresh the summary data as it's more important for header stats
+      const { startDate, endDate } = getDateRangeParams();
+      const summary = await fetchSummary(startDate, endDate);
+      setSummaryData(summary);
+      console.log('Summary data refreshed successfully:', summary);
+      
+      // Then refresh conversions list
       const refreshParams = {
         page: 1,
         size: 10,
@@ -117,11 +126,6 @@ const ConversionsPage = () => {
         ...getDateRangeParams()
       };
       await fetchConversions(refreshParams);
-      
-      // Also refresh summary data
-      const { startDate, endDate } = getDateRangeParams();
-      const summary = await fetchSummary(startDate, endDate);
-      setSummaryData(summary);
     } catch (err) {
       console.error('Error refreshing data:', err);
     } finally {
@@ -134,8 +138,8 @@ const ConversionsPage = () => {
     setCurrentPage(1);
   }, [influenceFilter, dateRange]);
 
-  // Stats to display (prefer stats from conversions hook, fallback to summary data)
-  const displayStats = stats || summaryData || {
+  // Stats to display (prefer summary data as it's more comprehensive, fallback to per-page stats)
+  const displayStats = summaryData || stats || {
     totalConversions: 0,
     adInfluencedCount: 0,
     averageInfluenceScore: 0,
@@ -189,7 +193,9 @@ const ConversionsPage = () => {
                 </div>
                 {displayStats.totalConversions > 0 && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    {Math.round((displayStats.adInfluencedCount / displayStats.totalConversions) * 100)}% of total
+                    {displayStats.adInfluencedCount > 0 ? 
+                      `${Math.round((displayStats.adInfluencedCount / displayStats.totalConversions) * 100)}% of total` : 
+                      '0% of total'}
                   </p>
                 )}
               </>
@@ -220,7 +226,8 @@ const ConversionsPage = () => {
               <LoadingSpinner size="small" />
             ) : (
               <div className="text-2xl font-bold flex items-center gap-2">
-                ${displayStats.totalRevenue.toLocaleString()}
+              ${typeof displayStats.totalRevenue === 'number' ? 
+                Math.round(displayStats.totalRevenue).toLocaleString() : '0'}
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </div>
             )}
@@ -275,9 +282,18 @@ const ConversionsPage = () => {
       {summaryError && (
         <ErrorMessage 
           message={summaryError.message || 'Failed to load summary data'} 
-          onRetry={() => {
-            const { startDate, endDate } = getDateRangeParams();
-            fetchSummary(startDate, endDate);
+          onRetry={async () => {
+            try {
+              setSummaryLoading(true);
+              const { startDate, endDate } = getDateRangeParams();
+              const summary = await fetchSummary(startDate, endDate);
+              setSummaryData(summary);
+              setSummaryError(null);
+            } catch (err) {
+              console.error('Error retrying summary fetch:', err);
+            } finally {
+              setSummaryLoading(false);
+            }
           }}
         />
       )}
