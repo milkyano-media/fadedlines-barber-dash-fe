@@ -90,6 +90,21 @@ const DashboardHomePage = () => {
             <p className='text-xs text-muted-foreground'>Active customers</p>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Event Tracking</CardTitle>
+            <CardDescription>Browse all tracked events</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link
+              to='/events'
+              className='inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2'
+            >
+              View Events
+            </Link>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Chart Placeholders */}
@@ -124,7 +139,7 @@ const DashboardHomePage = () => {
       </div>
 
       {/* Quick Links */}
-      <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+      <div className='grid grid-cols-1 md:grid-cols-4 gap-6'>
         <Card>
           <CardHeader>
             <CardTitle>Top Customers (Dummy)</CardTitle>

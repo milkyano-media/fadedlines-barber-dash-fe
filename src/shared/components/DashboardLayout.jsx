@@ -6,7 +6,8 @@ import {
   Home, 
   Users, 
   BarChart3, 
-  LineChart 
+  LineChart,
+  ActivitySquare
 } from 'lucide-react';
 import { cn } from '@/lib/twUtils';
 
@@ -14,7 +15,8 @@ const menuItems = [
   { path: '/dashboard', label: 'Dashboard', icon: Home },
   { path: '/customers', label: 'Customers', icon: Users },
   { path: '/campaigns', label: 'Campaigns', icon: BarChart3 },
-  { path: '/conversions', label: 'Conversions', icon: LineChart }
+  { path: '/conversions', label: 'Conversions', icon: LineChart },
+  { path: '/events', label: 'Events', icon: ActivitySquare }
 ];
 
 const DashboardLayout = () => {

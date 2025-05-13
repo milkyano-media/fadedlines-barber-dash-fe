@@ -12,6 +12,7 @@ import NotFoundPage from './features/not-found/NotFoundPage';
 import CustomersPage from './features/customers/CustomersPage';
 import CampaignsPage from './features/campaigns/CampaignsPage';
 import ConversionsPage from './features/conversions/ConversionsPage';
+import EventsPage from './features/events/EventsPage';
 
 // Route configuration array
 const routesConfig = [
@@ -42,6 +43,10 @@ const routesConfig = [
       {
         path: 'conversions',
         element: <ConversionsPage />
+      },
+      {
+        path: 'events',
+        element: <EventsPage />
       }
     ]
   },
