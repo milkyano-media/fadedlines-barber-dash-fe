@@ -187,18 +187,17 @@ const ConversionsList = ({ conversions }) => {
                                             </span>
                                           )}
 
-                                          {event.trafficSource === 'FACEBOOK' ? (
-                                            event.score > 0 && event.eventName !== 'create_booking' && (
-                                              <span
-                                                className={`px-2 py-1 text-xs rounded-md ${
-                                                  event.score === 1
-                                                    ? 'bg-indigo-100 text-indigo-800 border border-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300 dark:border-indigo-800 font-medium'
-                                                    : 'bg-sky-100 text-sky-800 border border-sky-200 dark:bg-sky-900/30 dark:text-sky-400 dark:border-sky-800'
-                                                }`}
-                                              >
-                                                +{event.score} pts
-                                              </span>
-                                            )
+                                          {/* Show points for any traffic source with score > 0 */}
+                                          {event.score > 0 && event.eventName !== 'create_booking' ? (
+                                            <span
+                                              className={`px-2 py-1 text-xs rounded-md ${
+                                                event.score === 1
+                                                  ? 'bg-indigo-100 text-indigo-800 border border-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300 dark:border-indigo-800 font-medium'
+                                                  : 'bg-sky-100 text-sky-800 border border-sky-200 dark:bg-sky-900/30 dark:text-sky-400 dark:border-sky-800'
+                                              }`}
+                                            >
+                                              +{event.score} pts
+                                            </span>
                                           ) : (
                                             event.eventName !== 'create_booking' && (
                                               <span className='px-2 py-1 text-xs rounded-md bg-gray-100 text-gray-800 border border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'>
