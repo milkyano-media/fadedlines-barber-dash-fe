@@ -2,14 +2,15 @@ import { useState, useEffect, useCallback } from 'react';
 import { conversionsService } from '../services/conversionsService';
 
 /**
- * Hook for managing conversions data
- * @param {import('../types/conversionTypes').UseConversionsOptions} options
+ * Hook for managing conversions list data
+ * @param {Object} options - Query parameters
+ * @returns {Object} Conversions list data and operations
  */
-export function useConversions(options = {}) {
+export function useConversionsList(options = {}) {
   const [conversions, setConversions] = useState([]);
   const [meta, setMeta] = useState(null);
   const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Start with false since we won't fetch automatically
   const [error, setError] = useState(null);
 
   // Fetch conversions with current options
@@ -22,44 +23,26 @@ export function useConversions(options = {}) {
       const queryOptions = overrideOptions || options;
       
       const response = await conversionsService.getConversions(queryOptions);
-      setConversions(response.data);
-      setMeta(response.meta);
-      setStats(response.stats);
+      setConversions(response.data || []);
+      setMeta(response.meta || null);
+      setStats(response.stats || null);
+      
+      return response;
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch conversions'));
       console.error('Error fetching conversions:', err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [options]);
 
-  // Fetch data when options change, but prevent infinite loops
-  useEffect(() => {
-    // Skip initial load if necessary
-    if (Object.keys(options).length === 0) return;
-    
-    // Fetch data with current options
-    fetchConversions(options);
-  }, [options.page, options.search, options.influenceLevel, options.source, options.startDate, options.endDate]);
-
-  // Fetch single conversion details
+  // Fetch a single conversion's details
   const fetchConversion = useCallback(async (conversionSequenceId) => {
     try {
       const response = await conversionsService.getConversionDetails(conversionSequenceId);
       return response.data;
     } catch (err) {
       console.error('Error fetching conversion details:', err);
-      throw err;
-    }
-  }, []);
-
-  // Fetch summary data
-  const fetchSummary = useCallback(async (startDate, endDate, source) => {
-    try {
-      const response = await conversionsService.getConversionsSummary(startDate, endDate, source);
-      return response.data;
-    } catch (err) {
-      console.error('Error fetching conversions summary:', err);
       throw err;
     }
   }, []);
@@ -71,7 +54,6 @@ export function useConversions(options = {}) {
     loading,
     error,
     fetchConversions,
-    fetchConversion,
-    fetchSummary
+    fetchConversion
   };
 }

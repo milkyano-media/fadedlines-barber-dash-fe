@@ -68,15 +68,41 @@ export const conversionsService = {
       if (endDate) queryParams.append('endDate', endDate);
       if (source) queryParams.append('source', source);
 
-      console.log('Fetching summary with params:', { startDate, endDate, source });
-      const response = await v2Client.axiosInstance.get(
-        `/conversions/summary?${queryParams.toString()}`
-      );
-      console.log('Summary API response:', response.data);
+      const url = `/conversions/summary?${queryParams.toString()}`;
+
+      const response = await v2Client.axiosInstance.get(url);
+
+      if (!response.data || !response.data.data) {
+        // Return a safe default structure
+        return {
+          data: {
+            totalConversions: 0,
+            adInfluencedCount: 0,
+            averageInfluenceScore: 0,
+            totalRevenue: 0,
+            campaignBreakdown: [],
+            influenceLevelBreakdown: []
+          },
+          status: 'OK',
+          message: 'No data available'
+        };
+      }
+
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch conversions summary:', error);
-      throw error;
+      // Return a safe default structure in case of error
+      return {
+        data: {
+          totalConversions: 0,
+          adInfluencedCount: 0,
+          averageInfluenceScore: 0,
+          totalRevenue: 0,
+          campaignBreakdown: [],
+          influenceLevelBreakdown: []
+        },
+        status: 'ERROR',
+        message: error.message || 'Failed to fetch summary data'
+      };
     }
   }
 };
