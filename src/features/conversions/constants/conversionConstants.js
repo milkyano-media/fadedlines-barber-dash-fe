@@ -1,4 +1,14 @@
 // Conversions Filter Constants
+export const SOURCE_TYPES = {
+  WEBSITE: 'website',
+  NON_WEB: 'non-web'
+};
+
+// Source type colors
+export const SOURCE_TYPE_COLORS = {
+  website: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+  'non-web': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400'
+};
 export const DATE_RANGES = {
   LAST_7_DAYS: '7d',
   LAST_30_DAYS: '30d',
@@ -39,6 +49,59 @@ export const getInfluenceLabel = (score) => {
   if (score >= 51) return 'Significantly influenced';
   if (score >= 26) return 'Partially influenced';
   return 'Mostly organic';
+};
+
+// Helper function to determine if a conversion came from website or non-web
+export const getConversionSource = (conversion) => {
+  // First check if the conversion has a direct source property from backend
+  if (conversion.source) {
+    return conversion.source;
+  }
+
+  // Check if any events have a source property
+  if (conversion?.details?.events) {
+    const bookingEvent = conversion.details.events.find(event => event.eventName === 'create_booking');
+    if (bookingEvent && bookingEvent.source) {
+      return bookingEvent.source;
+    }
+  }
+  
+  // Check the booking event's properties for non-web flags
+  if (conversion?.details?.events) {
+    // Find the booking event in the events list
+    const bookingEvent = conversion.details.events.find(event => event.eventName === 'create_booking');
+    
+    if (bookingEvent) {
+      // Look for non-web specific flags in the booking event
+      if (bookingEvent.properties) {
+        // Check for 'source: non-web' in the booking properties
+        if (bookingEvent.properties.booking?.source === 'non-web') {
+          return SOURCE_TYPES.NON_WEB;
+        }
+        
+        // Check for non_web flag in properties or attribution
+        if (bookingEvent.properties.non_web === true || 
+            bookingEvent.properties.attribution?.non_web === true) {
+          return SOURCE_TYPES.NON_WEB;
+        }
+      }
+    }
+  }
+  
+  // Default to website source if no non-web flags are found
+  return SOURCE_TYPES.WEBSITE;
+};
+
+// Helper function to get source type label
+export const getSourceTypeLabel = (source) => {
+  switch (source) {
+    case SOURCE_TYPES.WEBSITE:
+      return 'Website';
+    case SOURCE_TYPES.NON_WEB:
+      return 'Non-web';
+    default:
+      return source;
+  }
 };
 
 export const getEventBadgeColor = (trafficSource, hasUtm) => {

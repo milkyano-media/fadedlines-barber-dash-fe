@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { getInfluenceColor, getInfluenceLabel, getEventBadgeColor } from '../constants/conversionConstants';
+import {
+  getInfluenceColor,
+  getInfluenceLabel,
+  getEventBadgeColor,
+  getConversionSource,
+  getSourceTypeLabel,
+  SOURCE_TYPES
+} from '../constants/conversionConstants';
+import { Globe, Database } from 'lucide-react';
 import dayjs from 'dayjs';
 import { Tooltip } from 'react-tooltip';
 import 'react-tooltip/dist/react-tooltip.css';
@@ -24,19 +32,36 @@ const ConversionsList = ({ conversions }) => {
             <table className='w-full caption-bottom text-sm'>
               <thead className='[&_tr]:border-b'>
                 <tr className='border-b transition-colors hover:bg-muted/50'>
-                  <th className='h-10 px-4 text-left align-middle font-medium w-12'>ID</th>
-                  <th className='h-10 px-4 text-left align-middle font-medium'>Booking ID</th>
-                  <th className='h-10 px-4 text-left align-middle font-medium'>Customer</th>
-                  <th className='h-10 px-4 text-left align-middle font-medium'>Barber</th>
-                  <th className='h-10 px-4 text-left align-middle font-medium'>Campaign</th>
-                  <th className='h-10 px-4 text-left align-middle font-medium'>Ads Influence</th>
-                  <th className='h-10 px-4 text-right align-middle font-medium'>Actions</th>
+                  <th className='h-10 px-4 text-left align-middle font-medium w-12'>
+                    ID
+                  </th>
+                  <th className='h-10 px-4 text-left align-middle font-medium'>
+                    Booking ID
+                  </th>
+                  <th className='h-10 px-4 text-left align-middle font-medium'>
+                    Customer
+                  </th>
+                  <th className='h-10 px-4 text-left align-middle font-medium'>
+                    Barber
+                  </th>
+                  <th className='h-10 px-4 text-left align-middle font-medium'>
+                    Campaign
+                  </th>
+                  <th className='h-10 px-4 text-left align-middle font-medium'>
+                    Source
+                  </th>
+                  <th className='h-10 px-4 text-left align-middle font-medium'>
+                    Ads Influence
+                  </th>
+                  <th className='h-10 px-4 text-right align-middle font-medium'>
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className='[&_tr:last-child]:border-0'>
                 {conversions.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className='p-4 align-middle text-center'>
+                    <td colSpan={8} className='p-4 align-middle text-center'>
                       No conversions found matching your search criteria
                     </td>
                   </tr>
@@ -50,23 +75,47 @@ const ConversionsList = ({ conversions }) => {
                         <td className='p-4 align-middle font-medium text-primary'>
                           {conversion.bookingId}
                         </td>
-                        <td className='p-4 align-middle'>{conversion.customerName}</td>
                         <td className='p-4 align-middle'>
-                          {conversion.teamMemberName ? 
-                            <span className="text-sm font-medium">
-                              {conversion.teamMemberName}
-                            </span> : 
-                            <span className="text-muted-foreground">Not assigned</span>
-                          }
+                          {conversion.customerName}
                         </td>
                         <td className='p-4 align-middle'>
-                          {conversion.campaignName && conversion.campaignName !== 'None' ? (
+                          {conversion.teamMemberName ? (
+                            <span className='text-sm font-medium'>
+                              {conversion.teamMemberName}
+                            </span>
+                          ) : (
+                            <span className='text-muted-foreground'>
+                              Not assigned
+                            </span>
+                          )}
+                        </td>
+                        <td className='p-4 align-middle'>
+                          {conversion.campaignName &&
+                          conversion.campaignName !== 'None' ? (
                             <span className='px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'>
                               {conversion.campaignName}
                             </span>
                           ) : (
                             <span className='text-muted-foreground'>None</span>
                           )}
+                        </td>
+                        <td className='p-4 align-middle'>
+                          <div className='flex items-center gap-2'>
+                            {getConversionSource(conversion) ===
+                            SOURCE_TYPES.WEBSITE ? (
+                              <>
+                                <span className='bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs dark:bg-blue-900/30 dark:text-blue-400'>
+                                  Website
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <span className='bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs dark:bg-purple-900/30 dark:text-purple-400'>
+                                  Non-web
+                                </span>
+                              </>
+                            )}
+                          </div>
                         </td>
                         <td className='p-4 align-middle'>
                           <div className='flex items-center gap-2'>
@@ -94,11 +143,13 @@ const ConversionsList = ({ conversions }) => {
                           >
                             {expandedRows[conversion.id] ? (
                               <>
-                                Hide <ChevronUp className='w-4 h-4 ml-1 text-green-500' />
+                                Hide{' '}
+                                <ChevronUp className='w-4 h-4 ml-1 text-green-500' />
                               </>
                             ) : (
                               <>
-                                View <ChevronDown className='w-4 h-4 ml-1 text-green-500' />
+                                View{' '}
+                                <ChevronDown className='w-4 h-4 ml-1 text-green-500' />
                               </>
                             )}
                           </button>
@@ -106,7 +157,7 @@ const ConversionsList = ({ conversions }) => {
                       </tr>
                       {expandedRows[conversion.id] && (
                         <tr>
-                          <td colSpan={7} className='bg-muted/20 p-4'>
+                          <td colSpan={8} className='bg-muted/20 p-4'>
                             <div className='mb-3'>
                               <h4 className='font-medium text-sm'>
                                 Customer Journey
@@ -114,8 +165,10 @@ const ConversionsList = ({ conversions }) => {
                               <p className='text-xs text-muted-foreground'>
                                 Conversion Sequence:{' '}
                                 <span
-                                  data-tooltip-id="seq-tooltip"
-                                  data-tooltip-content={conversion.conversionSequenceId}
+                                  data-tooltip-id='seq-tooltip'
+                                  data-tooltip-content={
+                                    conversion.conversionSequenceId
+                                  }
                                 >
                                   {conversion.conversionSequenceId}
                                 </span>
@@ -154,41 +207,50 @@ const ConversionsList = ({ conversions }) => {
 
                                         <div className='flex items-center flex-wrap gap-2 mt-1 md:mt-0 overflow-hidden'>
                                           <span className='px-2 py-1 text-xs rounded-md bg-muted flex-shrink-0 min-w-[80px] text-center'>
-                                            {event.eventName === 'create_booking'
+                                            {event.eventName ===
+                                            'create_booking'
                                               ? '🛒\u00A0\u00A0Booking\u00A0\u00A0\u00A0'
                                               : '👁️\u00A0\u00A0Page Visit'}
                                           </span>
 
-                                          <span 
+                                          <span
                                             className='px-2 py-1 text-xs rounded-md bg-muted max-w-md truncate'
-                                            data-tooltip-id="url-tooltip"
+                                            data-tooltip-id='url-tooltip'
                                             data-tooltip-content={event.pageUrl}
                                           >
                                             {event.pageUrl}
                                           </span>
 
-                                          {event.fbclid && event.eventName !== 'create_booking' && (
-                                            <span 
-                                              className='px-2 py-1 text-xs rounded-md bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800'
-                                              data-tooltip-id="fbclid-tooltip"
-                                              data-tooltip-content={event.fbclid}
-                                            >
-                                              📱 Click ID
-                                            </span>
-                                          )}
+                                          {event.fbclid &&
+                                            event.eventName !==
+                                              'create_booking' && (
+                                              <span
+                                                className='px-2 py-1 text-xs rounded-md bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800'
+                                                data-tooltip-id='fbclid-tooltip'
+                                                data-tooltip-content={
+                                                  event.fbclid
+                                                }
+                                              >
+                                                📱 Click ID
+                                              </span>
+                                            )}
 
-                                          {event.utm && event.eventName !== 'create_booking' && (
-                                            <span 
-                                              className='px-2 py-1 text-xs rounded-md bg-green-100 text-green-800 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800'
-                                              data-tooltip-id="utm-tooltip"
-                                              data-tooltip-content={event.utm}
-                                            >
-                                              📊 UTM Parameters
-                                            </span>
-                                          )}
+                                          {event.utm &&
+                                            event.eventName !==
+                                              'create_booking' && (
+                                              <span
+                                                className='px-2 py-1 text-xs rounded-md bg-green-100 text-green-800 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800'
+                                                data-tooltip-id='utm-tooltip'
+                                                data-tooltip-content={event.utm}
+                                              >
+                                                📊 UTM Parameters
+                                              </span>
+                                            )}
 
                                           {/* Show points for any traffic source with score > 0 */}
-                                          {event.score > 0 && event.eventName !== 'create_booking' ? (
+                                          {event.score > 0 &&
+                                          event.eventName !==
+                                            'create_booking' ? (
                                             <span
                                               className={`px-2 py-1 text-xs rounded-md ${
                                                 event.score === 1
@@ -199,7 +261,8 @@ const ConversionsList = ({ conversions }) => {
                                               +{event.score} pts
                                             </span>
                                           ) : (
-                                            event.eventName !== 'create_booking' && (
+                                            event.eventName !==
+                                              'create_booking' && (
                                               <span className='px-2 py-1 text-xs rounded-md bg-gray-100 text-gray-800 border border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'>
                                                 {event.trafficSource}
                                               </span>
@@ -229,7 +292,8 @@ const ConversionsList = ({ conversions }) => {
                                     Barber
                                   </h5>
                                   <p className='text-sm'>
-                                    {conversion.teamMemberName || 'Not assigned'}
+                                    {conversion.teamMemberName ||
+                                      'Not assigned'}
                                   </p>
                                 </div>
                                 <div className='mt-2 sm:mt-0'>
@@ -262,10 +326,42 @@ const ConversionsList = ({ conversions }) => {
       </Card>
 
       {/* Global tooltips */}
-      <Tooltip id="url-tooltip" style={{ maxWidth: '500px', textAlign: 'left', overflowWrap: 'break-word', wordBreak: 'break-all' }} />
-      <Tooltip id="fbclid-tooltip" style={{ maxWidth: '500px', textAlign: 'left', overflowWrap: 'break-word', wordBreak: 'break-all' }} />
-      <Tooltip id="utm-tooltip" style={{ maxWidth: '500px', textAlign: 'left', overflowWrap: 'break-word', wordBreak: 'break-all' }} />
-      <Tooltip id="seq-tooltip" style={{ maxWidth: '500px', textAlign: 'left', overflowWrap: 'break-word', wordBreak: 'break-all' }} />
+      <Tooltip
+        id='url-tooltip'
+        style={{
+          maxWidth: '500px',
+          textAlign: 'left',
+          overflowWrap: 'break-word',
+          wordBreak: 'break-all'
+        }}
+      />
+      <Tooltip
+        id='fbclid-tooltip'
+        style={{
+          maxWidth: '500px',
+          textAlign: 'left',
+          overflowWrap: 'break-word',
+          wordBreak: 'break-all'
+        }}
+      />
+      <Tooltip
+        id='utm-tooltip'
+        style={{
+          maxWidth: '500px',
+          textAlign: 'left',
+          overflowWrap: 'break-word',
+          wordBreak: 'break-all'
+        }}
+      />
+      <Tooltip
+        id='seq-tooltip'
+        style={{
+          maxWidth: '500px',
+          textAlign: 'left',
+          overflowWrap: 'break-word',
+          wordBreak: 'break-all'
+        }}
+      />
     </>
   );
 };
