@@ -116,3 +116,11 @@ export const getEventBadgeColor = (trafficSource, hasUtm) => {
   }
   return 'bg-gray-100 text-gray-800 border border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700';
 };
+
+// Helper function to generate Square booking URL
+export const getSquareBookingUrl = (bookingId) => {
+  if (!bookingId || bookingId === 'None' || bookingId.startsWith('booking-')) {
+    return null; // Return null for invalid or placeholder booking IDs
+  }
+  return `https://app.squareup.com/dashboard/appointments/reservations/${bookingId}/edit`;
+};

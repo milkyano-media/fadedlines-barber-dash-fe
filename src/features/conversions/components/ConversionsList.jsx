@@ -7,9 +7,10 @@ import {
   getEventBadgeColor,
   getConversionSource,
   getSourceTypeLabel,
+  getSquareBookingUrl,
   SOURCE_TYPES
 } from '../constants/conversionConstants';
-import { Globe, Database } from 'lucide-react';
+import { Globe, Database, ExternalLink } from 'lucide-react';
 import dayjs from 'dayjs';
 import { Tooltip } from 'react-tooltip';
 import 'react-tooltip/dist/react-tooltip.css';
@@ -72,8 +73,23 @@ const ConversionsList = ({ conversions }) => {
                         <td className='p-4 align-middle font-medium'>
                           {conversion.id}
                         </td>
-                        <td className='p-4 align-middle font-medium text-primary'>
-                          {conversion.bookingId}
+                        <td className='p-4 align-middle font-medium'>
+                          {getSquareBookingUrl(conversion.bookingId) ? (
+                            <a
+                              href={getSquareBookingUrl(conversion.bookingId)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary hover:text-primary/80 hover:underline flex items-center"
+                              onClick={(e) => e.stopPropagation()} // Prevent row toggle when clicking link
+                              data-tooltip-id="booking-tooltip"
+                              data-tooltip-content="Click to open booking in Square"
+                            >
+                              {conversion.bookingId}
+                              <ExternalLink className="ml-1 h-3 w-3" />
+                            </a>
+                          ) : (
+                            <span className="text-primary">{conversion.bookingId}</span>
+                          )}
                         </td>
                         <td className='p-4 align-middle'>
                           {conversion.customerName}
@@ -286,6 +302,17 @@ const ConversionsList = ({ conversions }) => {
                                     {conversion.serviceName} | $
                                     {conversion.amount}
                                   </p>
+                                  {getSquareBookingUrl(conversion.bookingId) && (
+                                    <a
+                                      href={getSquareBookingUrl(conversion.bookingId)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-xs text-primary hover:text-primary/80 hover:underline flex items-center mt-1 w-fit"
+                                    >
+                                      View booking in Square
+                                      <ExternalLink className="ml-1 h-3 w-3" />
+                                    </a>
+                                  )}
                                 </div>
                                 <div className='mt-2 sm:mt-0'>
                                   <h5 className='text-sm font-medium'>
@@ -360,6 +387,13 @@ const ConversionsList = ({ conversions }) => {
           textAlign: 'left',
           overflowWrap: 'break-word',
           wordBreak: 'break-all'
+        }}
+      />
+      <Tooltip
+        id='booking-tooltip'
+        style={{
+          maxWidth: '300px',
+          textAlign: 'center'
         }}
       />
     </>
