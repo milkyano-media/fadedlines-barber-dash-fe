@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { API_BASE_URL, API_V1 } from '../config/apiConfig';
+import { API_BASE_URL, API_V1, API_V2 } from '../config/apiConfig';
 
 class ApiClient {
   constructor(baseURL) {
@@ -8,7 +8,7 @@ class ApiClient {
       headers: {
         'Content-Type': 'application/json'
       },
-      timeout: 30000  // 30 seconds
+      timeout: 30000 // 30 seconds
     });
 
     // Request interceptor
@@ -48,8 +48,6 @@ class ApiClient {
   }
 }
 
-// Export the default client for API v1
-const apiClient = new ApiClient(`${API_BASE_URL}${API_V1}`);
+const v2Client = new ApiClient(`${API_BASE_URL}${API_V2}`);
 
-export default apiClient;
-export { ApiClient };
+export default v2Client;

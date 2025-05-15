@@ -1,5 +1,5 @@
 // src/features/events/services/eventsService.js
-import v2Client from '@/api/clients/v2Client';
+import v2Client from '@/api/clients/apiClient';
 
 /**
  * Service for fetching and managing events
@@ -29,7 +29,9 @@ export const eventsService = {
         }
       });
 
-      const response = await v2Client.axiosInstance.get(`/events?${queryParams.toString()}`);
+      const response = await v2Client.axiosInstance.get(
+        `/events?${queryParams.toString()}`
+      );
       return response.data;
     } catch (error) {
       console.error('Failed to fetch events:', error);

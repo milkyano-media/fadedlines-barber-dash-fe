@@ -1,4 +1,4 @@
-import v2Client from '@/api/clients/v2Client';
+import v2Client from '@/api/clients/apiClient';
 
 /**
  * Conversions service for handling conversion-related API calls
@@ -26,7 +26,9 @@ export const conversionsService = {
         }
       });
 
-      const response = await v2Client.axiosInstance.get(`/conversions?${queryParams.toString()}`);
+      const response = await v2Client.axiosInstance.get(
+        `/conversions?${queryParams.toString()}`
+      );
       return response.data;
     } catch (error) {
       console.error('Failed to fetch conversions:', error);
@@ -41,7 +43,9 @@ export const conversionsService = {
    */
   async getConversionDetails(conversionSequenceId) {
     try {
-      const response = await v2Client.axiosInstance.get(`/conversions/${conversionSequenceId}`);
+      const response = await v2Client.axiosInstance.get(
+        `/conversions/${conversionSequenceId}`
+      );
       return response.data;
     } catch (error) {
       console.error('Failed to fetch conversion details:', error);
@@ -63,7 +67,9 @@ export const conversionsService = {
       if (endDate) queryParams.append('endDate', endDate);
 
       console.log('Fetching summary with params:', { startDate, endDate });
-      const response = await v2Client.axiosInstance.get(`/conversions/summary?${queryParams.toString()}`);
+      const response = await v2Client.axiosInstance.get(
+        `/conversions/summary?${queryParams.toString()}`
+      );
       console.log('Summary API response:', response.data);
       return response.data;
     } catch (error) {
