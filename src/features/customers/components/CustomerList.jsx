@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router';
-import { Mail, Phone, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Mail, Phone } from 'lucide-react';
 import dayjs from 'dayjs';
-import { Button } from '@/components/ui/button';
 
-const CustomerList = ({ customers, currentPage, totalPages, onPageChange, isLoading }) => {
+
+const CustomerList = ({ customers, isLoading }) => {
   if (!customers || customers.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -33,7 +33,7 @@ const CustomerList = ({ customers, currentPage, totalPages, onPageChange, isLoad
                 key={customer.id} 
                 className="border-b transition-colors hover:bg-muted/50 cursor-pointer"
               >
-                <td className="p-4 align-middle font-medium">#{(currentPage - 1) * 10 + index + 1}</td>
+                <td className="p-4 align-middle font-medium">#{index + 1}</td>
               <td className="p-4 align-middle">
                 <div className="flex flex-col">
                   <span className="font-medium">{customer.name}</span>
@@ -81,35 +81,7 @@ const CustomerList = ({ customers, currentPage, totalPages, onPageChange, isLoad
             </table>
             </div>
 
-  {/* Pagination */}
-  {totalPages > 1 && (
-    <div className="flex items-center justify-between">
-      <div className="text-sm text-muted-foreground">
-        Showing {(currentPage - 1) * 10 + 1} to {Math.min(currentPage * 10, customers.length * currentPage)} customers
-      </div>
-      <div className="flex items-center space-x-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage <= 1 || isLoading}
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <span className="text-sm">
-          Page {currentPage} of {totalPages}
-        </span>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage >= totalPages || isLoading}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
-    </div>
-  )}
+
 </div>
   );
 };

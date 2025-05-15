@@ -11,6 +11,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import dayjs from 'dayjs';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
+import Pagination from '@/components/common/Pagination';
 
 const ConversionsPage = () => {
   // Page state
@@ -311,32 +312,12 @@ const ConversionsPage = () => {
 
       {/* Pagination */}
       {meta && meta.totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            Showing {(currentPage - 1) * 10 + 1} to {Math.min(currentPage * 10, meta.totalElements)} of {meta.totalElements} conversions
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              disabled={currentPage <= 1 || loading}
-            >
-              Previous
-            </Button>
-            <span className="text-sm">
-              Page {currentPage} of {meta.totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.min(meta.totalPages, prev + 1))}
-              disabled={currentPage >= meta.totalPages || loading}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={meta.totalPages}
+          onPageChange={setCurrentPage}
+          meta={meta}
+        />
       )}
     </div>
   );

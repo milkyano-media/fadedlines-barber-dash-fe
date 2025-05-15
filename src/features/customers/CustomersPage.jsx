@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { Search, RefreshCw } from 'lucide-react';
+import Pagination from '@/components/common/Pagination';
 import CustomerList from './components/CustomerList';
 
 const CustomersPage = () => {
@@ -108,6 +109,13 @@ const CustomersPage = () => {
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
+  
+  // Meta object for pagination component
+  const meta = {
+    totalElements: filteredCustomers.length,
+    totalPages: totalPages,
+    size: pageSize
+  };
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -168,11 +176,20 @@ const CustomersPage = () => {
 
           <CustomerList 
             customers={paginatedCustomers}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
             isLoading={isLoading}
           />
+          
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-4">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                meta={meta}
+              />
+            </div>
+          )}
         </CardContent>
         <CardFooter>
           <div className="text-sm text-muted-foreground">

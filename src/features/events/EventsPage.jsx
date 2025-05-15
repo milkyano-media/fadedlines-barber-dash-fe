@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
-import { RefreshCw, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { RefreshCw, Search } from 'lucide-react';
 import EventList from './components/EventList';
 import { EVENT_TYPES, DATE_RANGES, SORT_OPTIONS } from './constants/eventConstants';
 import { useEvents } from './hooks/useEvents';
@@ -12,6 +12,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import dayjs from 'dayjs';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
+import Pagination from '@/components/common/Pagination';
 
 /**
  * Events page component - Lean version with just list, search, and delete functionality
@@ -199,32 +200,12 @@ const EventsPage = () => {
 
       {/* Pagination */}
       {meta && meta.totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            Showing {(currentPage - 1) * 10 + 1} to {Math.min(currentPage * 10, meta.totalElements)} of {meta.totalElements} events
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              disabled={currentPage <= 1 || loading}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-sm">
-              Page {currentPage} of {meta.totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.min(meta.totalPages, prev + 1))}
-              disabled={currentPage >= meta.totalPages || loading}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={meta.totalPages}
+          onPageChange={setCurrentPage}
+          meta={meta}
+        />
       )}
     </div>
   );
