@@ -14,13 +14,14 @@ export function useConversionsList(options = {}) {
   const [error, setError] = useState(null);
 
   // Fetch conversions with current options
+  // We use an empty dependency array to avoid recreating the function on every render
   const fetchConversions = useCallback(async (overrideOptions) => {
     try {
       setLoading(true);
       setError(null);
 
-      // Use override options if provided, otherwise use the original options
-      const queryOptions = overrideOptions || options;
+      // Always use the provided options
+      const queryOptions = overrideOptions || {};
       
       const response = await conversionsService.getConversions(queryOptions);
       setConversions(response.data || []);
@@ -34,7 +35,7 @@ export function useConversionsList(options = {}) {
     } finally {
       setLoading(false);
     }
-  }, [options]);
+  }, []); // Empty dependency array
 
   // Fetch a single conversion's details
   const fetchConversion = useCallback(async (conversionSequenceId) => {

@@ -46,6 +46,7 @@ const ConversionSummaryPage = () => {
   };
 
   // Fetch summary data when date range or source filter changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const fetchSummaryData = async () => {
       try {
@@ -54,15 +55,13 @@ const ConversionSummaryPage = () => {
         // Add source filter to summary query if it's not 'all'
         const sourceParam = sourceFilter !== 'all' ? sourceFilter : undefined;
         await fetchSummary(startDate, endDate, sourceParam);
-
-        // Log successful summary fetch
       } catch (err) {
         console.error('Error fetching summary:', err);
       }
     };
 
     fetchSummaryData();
-  }, [dateRange, sourceFilter, fetchSummary]);
+  }, [dateRange, sourceFilter]);
 
   // Handle refresh
   const handleRefresh = async () => {

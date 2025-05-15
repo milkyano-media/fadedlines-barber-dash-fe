@@ -30,10 +30,12 @@ const ConversionsPage = () => {
         </TabsList>
 
         <TabsContent value='summary' className='mt-6'>
+          {/* Render summary page only when this tab is active */}
           {activeTab === 'summary' && <ConversionSummaryPage />}
         </TabsContent>
 
         <TabsContent value='list' className='mt-6'>
+          {/* Render list page only when this tab is active */}
           {activeTab === 'list' && <ConversionListPage />}
         </TabsContent>
       </Tabs>

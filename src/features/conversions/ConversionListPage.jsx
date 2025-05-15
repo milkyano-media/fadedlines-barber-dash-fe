@@ -58,7 +58,7 @@ const ConversionListPage = () => {
     return { startDate, endDate };
   };
 
-  // Get hook for conversions list
+  // Get hook for conversions list with empty options object to avoid recreating functions
   const {
     conversions,
     meta,
@@ -66,9 +66,10 @@ const ConversionListPage = () => {
     loading,
     error,
     fetchConversions
-  } = useConversionsList();
+  } = useConversionsList({});
 
   // Fetch conversions when filters or pagination change
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const { startDate, endDate } = getDateRangeParams();
     
@@ -83,7 +84,7 @@ const ConversionListPage = () => {
     };
     
     fetchConversions(queryParams);
-  }, [currentPage, deferredSearchTerm, influenceFilter, sourceFilter, dateRange, fetchConversions]);
+  }, [currentPage, deferredSearchTerm, influenceFilter, sourceFilter, dateRange]);
 
   // Handle refresh
   const handleRefresh = async () => {
