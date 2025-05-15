@@ -13,12 +13,15 @@ export function useConversions(options = {}) {
   const [error, setError] = useState(null);
 
   // Fetch conversions with current options
-  const fetchConversions = useCallback(async () => {
+  const fetchConversions = useCallback(async (overrideOptions) => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await conversionsService.getConversions(options);
+      // Use override options if provided, otherwise use the original options
+      const queryOptions = overrideOptions || options;
+      
+      const response = await conversionsService.getConversions(queryOptions);
       setConversions(response.data);
       setMeta(response.meta);
       setStats(response.stats);
@@ -28,12 +31,16 @@ export function useConversions(options = {}) {
     } finally {
       setLoading(false);
     }
-  }, [options]);
+  }, []);
 
-  // Fetch data whenever options change
+  // Fetch data when options change, but prevent infinite loops
   useEffect(() => {
-    fetchConversions();
-  }, [options.page, options.search, options.influenceLevel, options.startDate, options.endDate]);
+    // Skip initial load if necessary
+    if (Object.keys(options).length === 0) return;
+    
+    // Fetch data with current options
+    fetchConversions(options);
+  }, [options.page, options.search, options.influenceLevel, options.source, options.startDate, options.endDate]);
 
   // Fetch single conversion details
   const fetchConversion = useCallback(async (conversionSequenceId) => {
