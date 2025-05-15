@@ -10,19 +10,49 @@ import {
   getSquareBookingUrl,
   SOURCE_TYPES
 } from '../constants/conversionConstants';
-import { Globe, Database, ExternalLink } from 'lucide-react';
+import { Globe, Database, ExternalLink, Copy, Check, ClipboardCopy } from 'lucide-react';
 import dayjs from 'dayjs';
 import { Tooltip } from 'react-tooltip';
 import 'react-tooltip/dist/react-tooltip.css';
+import Toast from '@/components/common/Toast';
 
 const ConversionsList = ({ conversions }) => {
   const [expandedRows, setExpandedRows] = useState({});
+  const [copiedId, setCopiedId] = useState(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+
+  // Function to shorten the booking ID for display purposes
+  const shortenBookingId = (bookingId) => {
+    if (!bookingId) return '';
+    // Check if it's already a shortened version (with 'booking-' prefix)
+    if (bookingId.startsWith('booking-')) return bookingId;
+    
+    // For actual Square booking IDs, show only first 8 characters
+    return bookingId.length > 8 ? `${bookingId.substring(0, 8)}...` : bookingId;
+  };
 
   const toggleRow = (id) => {
     setExpandedRows((prev) => ({
       ...prev,
       [id]: !prev[id]
     }));
+  };
+
+  // Function to handle copying booking ID to clipboard
+  const copyToClipboard = (text, e) => {
+    e.stopPropagation(); // Prevent row expansion
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        setCopiedId(text);
+        setToastMessage(`Booking ID copied: ${shortenBookingId(text)}`);
+        setShowToast(true);
+        // Reset the copied state after 2 seconds
+        setTimeout(() => setCopiedId(null), 2000);
+      })
+      .catch(err => {
+        console.error('Failed to copy text: ', err);
+      });
   };
 
   return (
@@ -54,7 +84,7 @@ const ConversionsList = ({ conversions }) => {
                   <th className='h-10 px-4 text-left align-middle font-medium'>
                     Ads Influence
                   </th>
-                  <th className='h-10 px-4 text-right align-middle font-medium'>
+                  <th className='h-10 px-4 text-center align-middle font-medium w-24'>
                     Actions
                   </th>
                 </tr>
@@ -74,22 +104,38 @@ const ConversionsList = ({ conversions }) => {
                           {conversion.id}
                         </td>
                         <td className='p-4 align-middle font-medium'>
-                          {getSquareBookingUrl(conversion.bookingId) ? (
-                            <a
-                              href={getSquareBookingUrl(conversion.bookingId)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary hover:text-primary/80 hover:underline flex items-center"
-                              onClick={(e) => e.stopPropagation()} // Prevent row toggle when clicking link
-                              data-tooltip-id="booking-tooltip"
-                              data-tooltip-content="Click to open booking in Square"
-                            >
-                              {conversion.bookingId}
-                              <ExternalLink className="ml-1 h-3 w-3" />
-                            </a>
-                          ) : (
-                            <span className="text-primary">{conversion.bookingId}</span>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {getSquareBookingUrl(conversion.bookingId) ? (
+                              <a
+                                href={getSquareBookingUrl(conversion.bookingId)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:text-primary/80 hover:underline flex items-center"
+                                onClick={(e) => e.stopPropagation()} // Prevent row toggle when clicking link
+                                data-tooltip-id="booking-tooltip"
+                                data-tooltip-content={`${conversion.bookingId} - Click to open booking in Square`}
+                              >
+                                {shortenBookingId(conversion.bookingId)}
+                                <ExternalLink className="ml-1 h-3 w-3" />
+                              </a>
+                            ) : (
+                              <span className="text-primary">{shortenBookingId(conversion.bookingId)}</span>
+                            )}
+                            {conversion.bookingId && !conversion.bookingId.startsWith('booking-') && (
+                              <button
+                                onClick={(e) => copyToClipboard(conversion.bookingId, e)}
+                                className="text-muted-foreground hover:text-primary transition-colors p-1 rounded-md hover:bg-muted"
+                                data-tooltip-id="copy-tooltip"
+                                data-tooltip-content="Copy booking ID"
+                              >
+                                {copiedId === conversion.bookingId ? (
+                                  <Check className="h-3.5 w-3.5 text-green-500" />
+                                ) : (
+                                  <Copy className="h-3.5 w-3.5" />
+                                )}
+                              </button>
+                            )}
+                          </div>
                         </td>
                         <td className='p-4 align-middle'>
                           {conversion.customerName}
@@ -152,10 +198,10 @@ const ConversionsList = ({ conversions }) => {
                             </span>
                           </div>
                         </td>
-                        <td className='p-4 align-middle text-right'>
+                        <td className='p-4 align-middle text-center'>
                           <button
                             onClick={() => toggleRow(conversion.id)}
-                            className='text-green-500 hover:text-green-400 flex items-center justify-end'
+                            className='text-green-500 hover:text-green-400 flex items-center justify-center mx-auto'
                           >
                             {expandedRows[conversion.id] ? (
                               <>
@@ -303,15 +349,29 @@ const ConversionsList = ({ conversions }) => {
                                     {conversion.amount}
                                   </p>
                                   {getSquareBookingUrl(conversion.bookingId) && (
-                                    <a
-                                      href={getSquareBookingUrl(conversion.bookingId)}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-xs text-primary hover:text-primary/80 hover:underline flex items-center mt-1 w-fit"
-                                    >
-                                      View booking in Square
-                                      <ExternalLink className="ml-1 h-3 w-3" />
-                                    </a>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <a
+                                        href={getSquareBookingUrl(conversion.bookingId)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-xs text-primary hover:text-primary/80 hover:underline flex items-center w-fit"
+                                      >
+                                        View booking in Square
+                                        <ExternalLink className="ml-1 h-3 w-3" />
+                                      </a>
+                                      <button
+                                        onClick={(e) => copyToClipboard(conversion.bookingId, e)}
+                                        className="text-muted-foreground hover:text-primary transition-colors p-1 rounded-md hover:bg-muted"
+                                        data-tooltip-id="copy-tooltip"
+                                        data-tooltip-content="Copy booking ID"
+                                      >
+                                        {copiedId === conversion.bookingId ? (
+                                          <Check className="h-3 w-3 text-green-500" />
+                                        ) : (
+                                          <Copy className="h-3 w-3" />
+                                        )}
+                                      </button>
+                                    </div>
                                   )}
                                 </div>
                                 <div className='mt-2 sm:mt-0'>
@@ -395,6 +455,20 @@ const ConversionsList = ({ conversions }) => {
           maxWidth: '300px',
           textAlign: 'center'
         }}
+      />
+      <Tooltip
+        id='copy-tooltip'
+        style={{
+          maxWidth: '200px',
+          textAlign: 'center'
+        }}
+      />
+      
+      {/* Toast notification for copy success */}
+      <Toast
+        isVisible={showToast}
+        message={toastMessage}
+        onClose={() => setShowToast(false)}
       />
     </>
   );
