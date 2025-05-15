@@ -54,9 +54,9 @@ export function useConversions(options = {}) {
   }, []);
 
   // Fetch summary data
-  const fetchSummary = useCallback(async (startDate, endDate) => {
+  const fetchSummary = useCallback(async (startDate, endDate, source) => {
     try {
-      const response = await conversionsService.getConversionsSummary(startDate, endDate);
+      const response = await conversionsService.getConversionsSummary(startDate, endDate, source);
       return response.data;
     } catch (err) {
       console.error('Error fetching conversions summary:', err);

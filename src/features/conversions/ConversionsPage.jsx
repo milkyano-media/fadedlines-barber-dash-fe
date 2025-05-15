@@ -89,7 +89,7 @@ const ConversionsPage = () => {
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [summaryError, setSummaryError] = useState(null);
 
-  // Fetch summary data when date range changes or on page load
+  // Fetch summary data when date range or source filter changes or on page load
   useEffect(() => {
     // Only fetch summary data if we're on the summary tab
     if (activeTab !== 'summary') return;
@@ -99,7 +99,10 @@ const ConversionsPage = () => {
         setSummaryLoading(true);
         setSummaryError(null);
         const { startDate, endDate } = getDateRangeParams();
-        const summary = await fetchSummary(startDate, endDate);
+        
+        // Add source filter to summary query if it's not 'all'
+        const sourceParam = sourceFilter !== 'all' ? sourceFilter : undefined;
+        const summary = await fetchSummary(startDate, endDate, sourceParam);
         setSummaryData(summary);
         
         // Log successful summary fetch
@@ -113,7 +116,7 @@ const ConversionsPage = () => {
     };
 
     fetchSummaryData();
-  }, [dateRange, fetchSummary, activeTab]); // Re-fetch when date range changes or tab changes
+  }, [dateRange, sourceFilter, fetchSummary, activeTab]); // Re-fetch when date range, source filter changes or tab changes
 
   // Handle refresh - fetch data based on active tab
   const handleRefresh = async () => {
@@ -131,7 +134,8 @@ const ConversionsPage = () => {
       // Only refresh data for the active tab
       if (activeTab === 'summary') {
         // Refresh summary data
-        const summary = await fetchSummary(startDate, endDate);
+        const sourceParam = sourceFilter !== 'all' ? sourceFilter : undefined;
+        const summary = await fetchSummary(startDate, endDate, sourceParam);
         setSummaryData(summary);
         console.log('Summary data refreshed successfully:', summary);
       } else if (activeTab === 'list') {
@@ -218,11 +222,14 @@ const ConversionsPage = () => {
               summaryError={summaryError}
               dateRange={dateRange}
               setDateRange={setDateRange}
+              sourceFilter={sourceFilter}
+              setSourceFilter={setSourceFilter}
               onRetry={async () => {
                 try {
                   setSummaryLoading(true);
                   const { startDate, endDate } = getDateRangeParams();
-                  const summary = await fetchSummary(startDate, endDate);
+                  const sourceParam = sourceFilter !== 'all' ? sourceFilter : undefined;
+                  const summary = await fetchSummary(startDate, endDate, sourceParam);
                   setSummaryData(summary);
                   setSummaryError(null);
                 } catch (err) {

@@ -57,16 +57,18 @@ export const conversionsService = {
    * Get conversions summary statistics
    * @param {string} [startDate] - Start date filter
    * @param {string} [endDate] - End date filter
+   * @param {string} [source] - Source filter (website or non-web)
    * @returns {Promise<import('../types/conversionTypes').ConversionsSummaryResponse>}
    */
-  async getConversionsSummary(startDate, endDate) {
+  async getConversionsSummary(startDate, endDate, source) {
     try {
       // Build query parameters
       const queryParams = new URLSearchParams();
       if (startDate) queryParams.append('startDate', startDate);
       if (endDate) queryParams.append('endDate', endDate);
+      if (source) queryParams.append('source', source);
 
-      console.log('Fetching summary with params:', { startDate, endDate });
+      console.log('Fetching summary with params:', { startDate, endDate, source });
       const response = await v2Client.axiosInstance.get(
         `/conversions/summary?${queryParams.toString()}`
       );
