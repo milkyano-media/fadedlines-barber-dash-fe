@@ -2,9 +2,96 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, TrendingUp, DollarSign, Users } from 'lucide-react';
 import { Select } from '@/components/ui/select';
-import { DATE_RANGES } from '../constants/conversionConstants';
+import { DATE_RANGES, CHART_COLORS } from '../constants/conversionConstants';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, Sector } from 'recharts';
+
+// Custom label renderer for pie chart with external labels
+const renderCustomizedLabel = (props) => {
+  const { cx, cy, midAngle, innerRadius, outerRadius, percent, index, value, name, fill } = props;
+  
+  // Skip labels for very small segments
+  if (percent < 0.05) return null;
+  
+  const RADIAN = Math.PI / 180;
+  const sin = Math.sin(-RADIAN * midAngle);
+  const cos = Math.cos(-RADIAN * midAngle);
+  
+  // Starting point of the line (on the outer edge of the pie)
+  const sx = cx + outerRadius * cos;
+  const sy = cy + outerRadius * sin;
+  
+  // Ending point of the line (extend further for better spacing)
+  const ex = cx + (outerRadius + 45) * cos;
+  const ey = cy + (outerRadius + 45) * sin;
+  
+  // Text position and anchor (more spacing from end of line)
+  const tx = ex + (cos >= 0 ? 12 : -12);
+  const ty = ey;
+  const textAnchor = cos >= 0 ? 'start' : 'end';
+  
+  // Intermediate point for curved or angled line
+  const mx = cx + (outerRadius + 15) * cos;
+  const my = cy + (outerRadius + 15) * sin;
+  
+  return (
+    <g>
+      {/* Line from pie to label */}
+      <path 
+        d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} 
+        stroke={fill} 
+        fill="none" 
+        strokeWidth={1.5} 
+      />
+      
+      {/* Small dot at the end of the line */}
+      <circle 
+        cx={ex} 
+        cy={ey} 
+        r={2.5} 
+        fill={fill} 
+        stroke="none" 
+      />
+      
+      {/* Percentage text */}
+      <text 
+        x={tx} 
+        y={ty} 
+        textAnchor={textAnchor} 
+        fill="currentColor"
+        fontSize={13}
+        fontWeight="600"
+        dominantBaseline="middle"
+      >
+        {`${(percent * 100).toFixed(0)}%`}
+      </text>
+    </g>
+  );
+};
+
+// Custom tooltip component
+const CustomTooltip = ({ active, payload }) => {
+  if (!active || !payload || !payload.length) return null;
+  
+  const data = payload[0].payload;
+  const color = payload[0].color;
+  
+  return (
+    <div className="bg-card border border-border p-3 rounded-md shadow-md">
+      <p className="font-medium mb-1 flex items-center">
+        <span className="inline-block w-3 h-3 mr-2 rounded-full" style={{ backgroundColor: color }}></span>
+        {data.level}
+      </p>
+      <p className="text-muted-foreground text-xs">
+        <strong>{data.count}</strong> conversion{data.count !== 1 ? 's' : ''} ({data.percentage}%)
+      </p>
+      <p className="text-muted-foreground text-xs">
+        Revenue: <strong>${Math.round(data.revenue).toLocaleString()}</strong>
+      </p>
+    </div>
+  );
+};
 
 const ConversionsSummary = ({ 
   summaryData, 
@@ -115,34 +202,85 @@ const ConversionsSummary = ({
         </Card>
       </div>
 
-      {/* Additional summary data can be added here, like source breakdown or charts */}
+      {/* Influence Level Breakdown Chart */}
       {!summaryLoading && summaryData && summaryData.influenceLevelBreakdown && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Influence Level Breakdown</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left pb-2">Influence Level</th>
-                    <th className="text-right pb-2">Count</th>
-                    <th className="text-right pb-2">Percentage</th>
-                    <th className="text-right pb-2">Revenue</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {summaryData.influenceLevelBreakdown.map((level, index) => (
-                    <tr key={index} className="border-b last:border-0">
-                      <td className="py-2">{level.level}</td>
-                      <td className="py-2 text-right">{level.count}</td>
-                      <td className="py-2 text-right">{level.percentage}%</td>
-                      <td className="py-2 text-right">${Math.round(level.revenue).toLocaleString()}</td>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Pie Chart */}
+              <div className="h-96 flex items-center justify-center" aria-label="Influence Level Distribution Pie Chart">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart margin={{ top: 40, right: 80, bottom: 30, left: 80 }}>
+                    <Pie
+                      data={summaryData.influenceLevelBreakdown}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={renderCustomizedLabel}
+                      outerRadius={80}
+                      innerRadius={40}
+                      fill="#8884d8"
+                      dataKey="count"
+                      nameKey="level"
+                      paddingAngle={2}
+                    >
+                      {summaryData.influenceLevelBreakdown.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      content={<CustomTooltip />}
+                    />
+                    <Legend 
+                      layout="horizontal"
+                      verticalAlign="bottom"
+                      align="center"
+                      iconSize={12}
+                      iconType="circle"
+                      formatter={(value, entry) => (
+                        <span className="text-foreground text-sm">{value}</span>
+                      )}
+                      wrapperStyle={{
+                        paddingTop: 20,
+                        marginBottom: 10
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              
+              {/* Details Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left pb-2">Influence Level</th>
+                      <th className="text-right pb-2">Count</th>
+                      <th className="text-right pb-2">Percentage</th>
+                      <th className="text-right pb-2">Revenue</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {summaryData.influenceLevelBreakdown.map((level, index) => (
+                      <tr key={index} className="border-b last:border-0">
+                        <td className="py-2 flex items-center">
+                          <span 
+                            className="inline-block w-3 h-3 mr-2 rounded-full" 
+                            style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
+                          ></span>
+                          {level.level}
+                        </td>
+                        <td className="py-2 text-right">{level.count}</td>
+                        <td className="py-2 text-right">{level.percentage}%</td>
+                        <td className="py-2 text-right">${Math.round(level.revenue).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </CardContent>
         </Card>
