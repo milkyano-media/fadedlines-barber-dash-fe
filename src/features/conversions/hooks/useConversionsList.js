@@ -9,7 +9,6 @@ import { conversionsService } from '../services/conversionsService';
 export function useConversionsList(options = {}) {
   const [conversions, setConversions] = useState([]);
   const [meta, setMeta] = useState(null);
-  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false); // Start with false since we won't fetch automatically
   const [error, setError] = useState(null);
 
@@ -22,15 +21,16 @@ export function useConversionsList(options = {}) {
 
       // Always use the provided options
       const queryOptions = overrideOptions || {};
-      
+
       const response = await conversionsService.getConversions(queryOptions);
       setConversions(response.data || []);
       setMeta(response.meta || null);
-      setStats(response.stats || null);
-      
+
       return response;
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch conversions'));
+      setError(
+        err instanceof Error ? err : new Error('Failed to fetch conversions')
+      );
       console.error('Error fetching conversions:', err);
     } finally {
       setLoading(false);
@@ -40,7 +40,9 @@ export function useConversionsList(options = {}) {
   // Fetch a single conversion's details
   const fetchConversion = useCallback(async (conversionSequenceId) => {
     try {
-      const response = await conversionsService.getConversionDetails(conversionSequenceId);
+      const response = await conversionsService.getConversionDetails(
+        conversionSequenceId
+      );
       return response.data;
     } catch (err) {
       console.error('Error fetching conversion details:', err);
@@ -51,7 +53,6 @@ export function useConversionsList(options = {}) {
   return {
     conversions,
     meta,
-    stats,
     loading,
     error,
     fetchConversions,

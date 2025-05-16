@@ -62,7 +62,6 @@ const ConversionListPage = () => {
   const {
     conversions,
     meta,
-    stats,
     loading,
     error,
     fetchConversions
