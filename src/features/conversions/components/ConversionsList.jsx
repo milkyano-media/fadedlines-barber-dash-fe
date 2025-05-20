@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import {
@@ -8,6 +8,7 @@ import {
   getConversionSource,
   getSourceTypeLabel,
   getSquareBookingUrl,
+  extractCampaignName,
   SOURCE_TYPES
 } from '../constants/conversionConstants';
 import { Globe, Database, ExternalLink, Copy, Check, ClipboardCopy } from 'lucide-react';
@@ -16,11 +17,48 @@ import { Tooltip } from 'react-tooltip';
 import 'react-tooltip/dist/react-tooltip.css';
 import Toast from '@/components/common/Toast';
 
-const ConversionsList = ({ conversions }) => {
+// Client-side source filtering function
+const filterBySource = (conversions, sourceFilter) => {
+  if (!sourceFilter || sourceFilter === 'all') return conversions;
+  
+  return conversions.filter(conversion => {
+    const source = conversion.source || getConversionSource(conversion);
+    return source === sourceFilter;
+  });
+};
+
+const ConversionsList = ({ conversions, sourceFilter }) => {
+  // Apply client-side filtering
+  const filteredConversions = filterBySource(conversions, sourceFilter);
   const [expandedRows, setExpandedRows] = useState({});
   const [copiedId, setCopiedId] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  
+  // Debug: Log conversions data structure to console
+  useEffect(() => {
+    if (conversions && conversions.length > 0) {
+      console.log('Conversion data example:', conversions[0]);
+      console.log('Campaign extracted:', extractCampaignName(conversions[0]));
+      
+      // Analyze all conversions to check campaign info
+      conversions.forEach(conversion => {
+        // First page_visit event with utm info
+        const pageVisitEvent = conversion.details?.events?.find(
+          event => event.eventName === 'page_visit'
+        );
+        
+        if (pageVisitEvent) {
+          console.log(`Conversion ${conversion.id}:`, {
+            campaignNameField: conversion.campaignName,
+            extractedCampaign: extractCampaignName(conversion),
+            utm: pageVisitEvent.utm,
+            pageUrl: pageVisitEvent.pageUrl
+          });
+        }
+      });
+    }
+  }, [conversions]);
 
   // Function to shorten the booking ID for display purposes
   const shortenBookingId = (bookingId) => {
@@ -152,19 +190,21 @@ const ConversionsList = ({ conversions }) => {
                           )}
                         </td>
                         <td className='p-4 align-middle'>
-                          {conversion.campaignName &&
-                          conversion.campaignName !== 'None' ? (
-                            <span className='px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'>
-                              {conversion.campaignName}
-                            </span>
-                          ) : (
-                            <span className='text-muted-foreground'>None</span>
-                          )}
+                          {/* Use extractCampaignName to get campaign from conversion or UTM params */}
+                          {(() => {
+                            const campaignName = extractCampaignName(conversion);
+                            return campaignName ? (
+                              <span className='px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'>
+                                {campaignName}
+                              </span>
+                            ) : (
+                              <span className='text-muted-foreground'>None</span>
+                            );
+                          })()}
                         </td>
                         <td className='p-4 align-middle'>
                           <div className='flex items-center gap-2'>
-                            {getConversionSource(conversion) ===
-                            SOURCE_TYPES.WEBSITE ? (
+                            {conversion.source === SOURCE_TYPES.WEBSITE ? (
                               <>
                                 <span className='bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs dark:bg-blue-900/30 dark:text-blue-400'>
                                   Website
@@ -397,6 +437,19 @@ const ConversionsList = ({ conversions }) => {
                                     )}{' '}
                                     ({conversion.adsInfluenceScore}%)
                                   </p>
+                                </div>
+                                <div className='mt-2 sm:mt-0'>
+                                  <h5 className='text-sm font-medium'>
+                                    Campaign
+                                  </h5>
+                                  {(() => {
+                                    const campaignName = extractCampaignName(conversion);
+                                    return campaignName ? (
+                                      <p className='text-sm'>{campaignName}</p>
+                                    ) : (
+                                      <p className='text-sm text-muted-foreground'>None</p>
+                                    );
+                                  })()}
                                 </div>
                               </div>
                             </div>

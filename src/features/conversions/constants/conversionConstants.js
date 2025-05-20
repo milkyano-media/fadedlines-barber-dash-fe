@@ -124,3 +124,90 @@ export const getSquareBookingUrl = (bookingId) => {
   }
   return `https://app.squareup.com/dashboard/appointments/reservations/${bookingId}/edit`;
 };
+
+// Helper function to clean up campaign names for display
+const cleanupCampaignName = (rawName) => {
+  if (!rawName) return null;
+  
+  // Remove any URL encoding
+  const decoded = decodeURIComponent(rawName.replace(/\+/g, ' '));
+  
+  // Handle specific patterns
+  if (decoded.includes('M_Sept24_BOC_AllBarbers_Retaining')) {
+    return 'Sept24 Barbers Retention';
+  }
+  
+  // Remove common prefixes/suffixes for readability
+  const cleaned = decoded
+    .replace(/^M_/, '') // Remove M_ prefix
+    .replace(/\s-\sCopy$/, '') // Remove '- Copy' suffix
+    .replace(/Ad\d+\s-\sCopy$/, '') // Remove 'Ad4 - Copy' pattern
+    .trim();
+  
+  return cleaned;
+};
+
+// Helper function to extract campaign name from events or use provided campaignName
+export const extractCampaignName = (conversion) => {
+  // If campaignName exists and is not 'None', use it
+  if (conversion.campaignName && conversion.campaignName !== 'None') {
+    return conversion.campaignName;
+  }
+  
+  // Otherwise try to extract from page_visit events' UTM parameters
+  if (conversion?.details?.events) {
+    // Look for page_visit events first, as they're more likely to have UTM data
+    const pageVisitEvent = conversion.details.events.find(event => 
+      event.eventName === 'page_visit' && event.utm);
+    
+    if (pageVisitEvent?.utm) {
+      // Extract campaign name from UTM string
+      const utmParts = pageVisitEvent.utm.split('/');
+      if (utmParts.length >= 3) {
+        return utmParts[2]; // The campaign name is usually the third part
+      }
+    }
+    
+    // Try to extract from URL parameters if UTM string not available
+    // Loop through all page_visit events to find one with utm_campaign
+    for (const event of conversion.details.events) {
+      if (event.eventName === 'page_visit' && event.pageUrl) {
+        try {
+          // Check for utm_campaign parameter
+          const url = new URL(event.pageUrl, 'https://example.com');
+          const utmCampaign = url.searchParams.get('utm_campaign');
+          if (utmCampaign) {
+            return cleanupCampaignName(utmCampaign);
+          }
+        } catch (e) {
+          // If URL parsing fails, try manual extraction
+          const match = event.pageUrl.match(/[?&]utm_campaign=([^&#]*)/i);
+          if (match && match[1]) {
+            return cleanupCampaignName(match[1]);
+          }
+        }
+      }
+    }
+    
+    // Special handling for events with 'M_Sept24_BOC_AllBarbers_Retaining_Amir' pattern
+    for (const event of conversion.details.events) {
+      if (event.eventName === 'page_visit' && event.pageUrl) {
+        const match = event.pageUrl.match(/utm_campaign=([^&]+)/i);
+        if (match && match[1]) {
+          return cleanupCampaignName(match[1]);
+        }
+      }
+    }
+    
+    // Last resort: look for utm in any event property
+    for (const event of conversion.details.events) {
+      if (event.utm) {
+        const campaignPart = event.utm.split('/')[2] || event.utm;
+        return cleanupCampaignName(campaignPart);
+      }
+    }
+  }
+  
+  // Return null if no campaign name found
+  return null;
+};

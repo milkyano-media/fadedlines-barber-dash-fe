@@ -82,7 +82,18 @@ const ConversionListPage = () => {
       endDate
     };
     
-    fetchConversions(queryParams);
+    console.log('Fetching conversions with params:', queryParams);
+    
+    fetchConversions(queryParams)
+      .then(response => {
+        console.log('Conversion response:', response);
+        // Check if we're getting correctly filtered results
+        if (response && response.data && response.data.length > 0) {
+          console.log('First conversion source:', response.data[0].source);
+          console.log('All sources:', response.data.map(conv => conv.source));
+        }
+      })
+      .catch(error => console.error('Error fetching conversions:', error));
   }, [currentPage, deferredSearchTerm, influenceFilter, sourceFilter, dateRange]);
 
   // Handle refresh
