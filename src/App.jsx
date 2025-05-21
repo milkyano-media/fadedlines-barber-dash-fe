@@ -13,6 +13,7 @@ import CustomersPage from './features/customers/CustomersPage';
 import CampaignsPage from './features/campaigns/CampaignsPage';
 import ConversionsPage from './features/conversions/ConversionsPage';
 import EventsPage from './features/events/EventsPage';
+import SyncEtlPage from './features/sync-etl/SyncEtlPage';
 
 // Route configuration array
 const routesConfig = [
@@ -47,6 +48,10 @@ const routesConfig = [
       {
         path: 'events',
         element: <EventsPage />
+      },
+      {
+        path: 'sync-etl',
+        element: <SyncEtlPage />
       }
     ]
   },

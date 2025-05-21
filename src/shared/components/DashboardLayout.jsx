@@ -7,6 +7,7 @@ import {
   BarChart3, 
   LineChart,
   ActivitySquare,
+  Database,
   LogOut,
   Moon,
   Sun
@@ -20,7 +21,8 @@ const menuItems = [
   { path: '/customers', label: 'Customers', icon: Users },
   { path: '/campaigns', label: 'Campaigns', icon: BarChart3 },
   { path: '/conversions', label: 'Conversions', icon: LineChart },
-  { path: '/events', label: 'Events', icon: ActivitySquare }
+  { path: '/events', label: 'Events', icon: ActivitySquare },
+  { path: '/sync-etl', label: 'Sync & ETL', icon: Database }
 ];
 
 const DashboardLayout = () => {
