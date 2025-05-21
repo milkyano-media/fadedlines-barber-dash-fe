@@ -175,6 +175,10 @@ const SyncEtlPage = () => {
                     <span className="text-sm font-medium">Team Members</span>
                     <span className="text-sm">{syncStatus ? formatDate(syncStatus.teams) : 'Loading...'}</span>
                   </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Booking Events</span>
+                    <span className="text-sm">{syncStatus ? formatDate(syncStatus.bookingEvents) : 'Loading...'}</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
