@@ -27,7 +27,7 @@ export const analyticsService = {
       });
 
       const response = await v2Client.axiosInstance.get(
-        `/customers?${queryParams.toString()}`
+        `/analytics/customers?${queryParams.toString()}`
       );
       return response.data;
     } catch (error) {
