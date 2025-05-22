@@ -1,16 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart3, TrendingUp, Users, DollarSign } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { BarChart3, TrendingUp, Users, DollarSign, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import dayjs from 'dayjs';
 
-const CampaignList = ({ campaigns, isLoading }) => {
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <LoadingSpinner size="large" />
-      </div>
-    );
-  }
+const CampaignList = ({ campaigns }) => {
+  const [expandedRows, setExpandedRows] = useState({});
+
+  // Toggle accordion expansion for a row
+  const toggleRow = (campaignName) => {
+    setExpandedRows((prev) => ({
+      ...prev,
+      [campaignName]: !prev[campaignName]
+    }));
+  };
 
   if (!campaigns || campaigns.length === 0) {
     return (
@@ -21,90 +25,120 @@ const CampaignList = ({ campaigns, isLoading }) => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {campaigns.map((campaign) => (
-        <Card key={campaign.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-          <CardHeader>
-            <div className="flex justify-between items-start">
-              <div>
-                <CardTitle className="text-lg">{campaign.name}</CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Started: {campaign.startDate}
-                </p>
-              </div>
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                campaign.status === 'active' 
-                  ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                  : campaign.status === 'completed'
-                  ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
-                  : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
-              }`}>
-                {campaign.status}
-              </span>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Source</span>
-                <span className="font-medium capitalize">{campaign.utmSource}</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">Total Visits</p>
-                  </div>
-                  <p className="text-2xl font-bold">{campaign.visitCount}</p>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">Bookings</p>
-                  </div>
-                  <p className="text-2xl font-bold">{campaign.bookingCount}</p>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">Conversion Rate</span>
-                  </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    campaign.conversionRate >= 15 
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                      : campaign.conversionRate >= 10
-                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
-                      : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
-                  }`}>
-                    {campaign.conversionRate}%
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">Influence Score</span>
-                  </div>
-                  <span className="font-medium">{campaign.avgInfluenceScore}%</span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">Est. Revenue</span>
-                  </div>
-                  <span className="font-medium">${campaign.revenue}</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+    <Card>
+      <CardContent className='p-0'>
+        <div className='rounded-md overflow-hidden'>
+          <table className='w-full caption-bottom text-sm'>
+            <thead className='[&_tr]:border-b'>
+              <tr className='border-b transition-colors hover:bg-muted/50'>
+                <th className='h-10 px-4 text-left align-middle font-medium'>
+                  Campaign Name
+                </th>
+                <th className='h-10 px-4 text-center align-middle font-medium'>
+                  Conversions
+                </th>
+                <th className='h-10 px-4 text-center align-middle font-medium'>
+                  Revenue
+                </th>
+                <th className='h-10 px-4 text-center align-middle font-medium'>
+                  Avg. Value
+                </th>
+                <th className='h-10 px-4 text-center align-middle font-medium w-24'>
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className='[&_tr:last-child]:border-0'>
+              {campaigns.map((campaign) => (
+                <React.Fragment key={campaign.campaignName}>
+                  <tr className='border-b transition-colors hover:bg-muted/50 cursor-pointer'>
+                    <td className='p-4 align-middle font-medium'>
+                      <div className='flex items-center gap-2'>
+                        <span className='px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'>
+                          Campaign
+                        </span>
+                        <span className='font-semibold'>{campaign.campaignName}</span>
+                      </div>
+                    </td>
+                    <td className='p-4 align-middle text-center'>
+                      <span className='font-bold text-lg'>{campaign.totalConversions}</span>
+                    </td>
+                    <td className='p-4 align-middle text-center'>
+                      <span className='font-bold text-lg'>${campaign.totalRevenue.toFixed(2)}</span>
+                    </td>
+                    <td className='p-4 align-middle text-center'>
+                      <span className='font-medium'>${campaign.avgConversionValue.toFixed(2)}</span>
+                    </td>
+                    <td className='p-4 align-middle text-center'>
+                      <button
+                        onClick={() => toggleRow(campaign.campaignName)}
+                        className='text-green-500 hover:text-green-400 flex items-center justify-center mx-auto'
+                      >
+                        {expandedRows[campaign.campaignName] ? (
+                          <>
+                            Hide{' '}
+                            <ChevronUp className='w-4 h-4 ml-1 text-green-500' />
+                          </>
+                        ) : (
+                          <>
+                            View{' '}
+                            <ChevronDown className='w-4 h-4 ml-1 text-green-500' />
+                          </>
+                        )}
+                      </button>
+                    </td>
+                  </tr>
+                  {expandedRows[campaign.campaignName] && (
+                    <tr>
+                      <td colSpan={5} className='bg-muted/20 p-4'>
+                        <div className='mb-3'>
+                          <h4 className='font-medium text-sm mb-2'>
+                            Latest Conversions ({campaign.latestConversions.length})
+                          </h4>
+                          
+                          {campaign.latestConversions.length > 0 ? (
+                            <div className='space-y-2'>
+                              {campaign.latestConversions.map((conversion) => (
+                                <div key={conversion.id} className='flex items-center justify-between p-3 bg-background rounded-md border'>
+                                  <div className='flex-1'>
+                                    <div className='flex items-center gap-4'>
+                                      <div>
+                                        <p className='font-medium text-sm'>{conversion.customerName}</p>
+                                        <p className='text-xs text-muted-foreground'>
+                                          {dayjs(conversion.bookingDate).format('MMM DD, YYYY HH:mm')}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <p className='text-sm'>{conversion.serviceName}</p>
+                                        <p className='text-xs text-muted-foreground'>
+                                          Barber: {conversion.teamMemberName}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className='text-right'>
+                                    <p className='font-bold'>${Number(conversion.amount).toFixed(2)}</p>
+                                    <p className='text-xs text-muted-foreground'>
+                                      ID: {conversion.bookingId}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className='text-sm text-muted-foreground'>No conversions found</p>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
