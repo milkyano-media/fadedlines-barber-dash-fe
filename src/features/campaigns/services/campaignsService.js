@@ -24,7 +24,7 @@ export const campaignsService = {
       });
 
       const response = await v2Client.axiosInstance.get(
-        `/campaigns?${queryParams.toString()}`
+        `/analytics/campaigns?${queryParams.toString()}`
       );
       return response.data;
     } catch (error) {
