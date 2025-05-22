@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '../auth/hooks/useAuth';
+import { useDashboard } from './useDashboard';
 import {
   Card,
   CardContent,
@@ -8,62 +9,157 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
 import {
   Activity,
   DollarSign,
   TrendingUp,
   Users,
-  BarChart3,
-  LineChart
+  Calendar,
+  RefreshCw,
+  ArrowUpRight,
+  ArrowDownRight,
+  Clock,
+  Star
 } from 'lucide-react';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import ErrorMessage from '@/components/common/ErrorMessage';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+
+dayjs.extend(relativeTime);
 
 const DashboardHomePage = () => {
   const { user } = useAuth();
+  const [dateRange, setDateRange] = useState('30d');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Dummy data for statistics
-  const stats = {
-    totalVisits: 1245,
-    totalRevenue: 24567,
-    conversionRate: 15.8,
-    totalCustomers: 342
+  // Calculate date range parameters
+  const getDateRangeParams = () => {
+    const now = dayjs();
+    let startDate = null;
+    let endDate = now.format('YYYY-MM-DD');
+
+    switch (dateRange) {
+      case '7d':
+        startDate = now.subtract(7, 'day').format('YYYY-MM-DD');
+        break;
+      case '30d':
+        startDate = now.subtract(30, 'day').format('YYYY-MM-DD');
+        break;
+      case '90d':
+        startDate = now.subtract(90, 'day').format('YYYY-MM-DD');
+        break;
+      default:
+        startDate = now.subtract(30, 'day').format('YYYY-MM-DD');
+    }
+
+    return { startDate, endDate };
   };
+
+  const { summary, recentActivity, topPerformers, loading, error, fetchDashboardData } = 
+    useDashboard(getDateRangeParams());
+
+  // Handle refresh
+  const handleRefresh = async () => {
+    if (isRefreshing) return;
+    
+    setIsRefreshing(true);
+    try {
+      await fetchDashboardData(getDateRangeParams());
+    } catch (err) {
+      console.error('Error refreshing dashboard:', err);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Handle date range change
+  const handleDateRangeChange = (newRange) => {
+    setDateRange(newRange);
+    const newParams = { ...getDateRangeParams() };
+    fetchDashboardData(newParams);
+  };
+
+  // Format currency
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
+  };
+
+  // Format percentage
+  const formatPercentage = (value) => {
+    return `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
+  };
+
+  if (error && !summary.totalConversions) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
+        </div>
+        <ErrorMessage 
+          message={error.message || 'Failed to load dashboard data'} 
+          onRetry={handleRefresh}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className='space-y-6'>
-      <div className='flex justify-between items-center'>
-        <h1 className='text-3xl font-bold'>Analytics Dashboard (Dummy)</h1>
-        <span className='text-muted-foreground'>
-          Welcome back, {user?.name}
-        </span>
+      <div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4'>
+        <div>
+          <h1 className='text-3xl font-bold'>Analytics Dashboard</h1>
+          <span className='text-muted-foreground'>
+            Welcome back, {user?.name}
+          </span>
+        </div>
+        <div className="flex items-center gap-4">
+          <Select
+            value={dateRange}
+            onChange={(e) => handleDateRangeChange(e.target.value)}
+            className="w-[180px]"
+          >
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+            <option value="90d">Last 90 days</option>
+          </Select>
+          <Button
+            variant="outline"
+            onClick={handleRefresh}
+            disabled={loading || isRefreshing}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${(loading || isRefreshing) ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
-      {/* Statistics Cards */}
+      {/* Summary Statistics */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
         <Card>
-          <CardHeader>
-            <CardTitle>Customers</CardTitle>
-            <CardDescription>View top customers and analytics</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link
-              to='/customers-new'
-              className='inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2'
-            >
-              View Customers
-            </Link>
-          </CardContent>
-        </Card>
-
-        <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Total Visits</CardTitle>
+            <CardTitle className='text-sm font-medium'>Total Conversions</CardTitle>
             <Activity className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>
-              {stats.totalVisits.toLocaleString()}
-            </div>
-            <p className='text-xs text-muted-foreground'>Website visitors</p>
+            {loading ? (
+              <LoadingSpinner size="small" />
+            ) : (
+              <>
+                <div className='text-2xl font-bold'>
+                  {summary.totalConversions?.toLocaleString() || 0}
+                </div>
+                <p className='text-xs text-muted-foreground'>
+                  Bookings converted from marketing
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -73,129 +169,276 @@ const DashboardHomePage = () => {
             <DollarSign className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>
-              ${stats.totalRevenue.toLocaleString()}
-            </div>
-            <p className='text-xs text-muted-foreground'>Total earnings</p>
+            {loading ? (
+              <LoadingSpinner size="small" />
+            ) : (
+              <>
+                <div className='text-2xl font-bold'>
+                  {formatCurrency(summary.totalRevenue || 0)}
+                </div>
+                {summary.revenueGrowth !== undefined && (
+                  <div className={`flex items-center text-xs ${
+                    summary.revenueGrowth >= 0 ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {summary.revenueGrowth >= 0 ? 
+                      <ArrowUpRight className="h-3 w-3 mr-1" /> : 
+                      <ArrowDownRight className="h-3 w-3 mr-1" />
+                    }
+                    {formatPercentage(summary.revenueGrowth)} from previous period
+                  </div>
+                )}
+              </>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>
-              Conversion Rate
-            </CardTitle>
+            <CardTitle className='text-sm font-medium'>Conversion Rate</CardTitle>
             <TrendingUp className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{stats.conversionRate}%</div>
-            <p className='text-xs text-muted-foreground'>Visitor to customer</p>
+            {loading ? (
+              <LoadingSpinner size="small" />
+            ) : (
+              <>
+                <div className='text-2xl font-bold'>
+                  {summary.conversionRate?.toFixed(1) || 0}%
+                </div>
+                <p className='text-xs text-muted-foreground'>
+                  Visitor to customer rate
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>
-              Total Customers
-            </CardTitle>
+            <CardTitle className='text-sm font-medium'>Total Customers</CardTitle>
             <Users className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{stats.totalCustomers}</div>
-            <p className='text-xs text-muted-foreground'>Active customers</p>
+            {loading ? (
+              <LoadingSpinner size="small" />
+            ) : (
+              <>
+                <div className='text-2xl font-bold'>
+                  {summary.totalCustomers?.toLocaleString() || 0}
+                </div>
+                <p className='text-xs text-muted-foreground'>
+                  Unique customers served
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Chart Placeholders */}
+      {/* Main Content Grid */}
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+        {/* Recent Activity */}
         <Card>
           <CardHeader>
-            <CardTitle>Traffic Distribution</CardTitle>
-            <CardDescription>Source of website traffic</CardDescription>
-          </CardHeader>
-          <CardContent className='h-[300px] flex items-center justify-center'>
-            <div className='text-center'>
-              <BarChart3 className='h-12 w-12 text-muted-foreground mx-auto mb-4' />
-              <p className='text-muted-foreground'>Traffic chart coming soon</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Recent Activity</CardTitle>
+                <CardDescription>Latest bookings and conversions</CardDescription>
+              </div>
+              <Link to="/conversions">
+                <Button variant="outline" size="sm">
+                  View All
+                </Button>
+              </Link>
             </div>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="flex justify-center p-6">
+                <LoadingSpinner size="medium" />
+              </div>
+            ) : recentActivity.length > 0 ? (
+              <div className="space-y-4">
+                {recentActivity.slice(0, 8).map((activity) => (
+                  <div key={activity.id} className="flex items-center justify-between p-3 rounded-md border">
+                    <div className="flex items-center space-x-3">
+                      <div className="flex-shrink-0">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {activity.customerName}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {activity.serviceName} • {activity.teamMemberName}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="text-right">
+                        <p className="text-sm font-medium">
+                          {formatCurrency(activity.amount)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {activity.timeAgo}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-muted-foreground">
+                No recent activity found
+              </div>
+            )}
           </CardContent>
         </Card>
 
+        {/* Top Performers */}
         <Card>
           <CardHeader>
-            <CardTitle>Conversion Trends</CardTitle>
-            <CardDescription>Showing daily conversion data</CardDescription>
+            <CardTitle>Top Performers</CardTitle>
+            <CardDescription>Best customers and barbers this period</CardDescription>
           </CardHeader>
-          <CardContent className='h-[300px] flex items-center justify-center'>
-            <div className='text-center'>
-              <LineChart className='h-12 w-12 text-muted-foreground mx-auto mb-4' />
-              <p className='text-muted-foreground'>
-                Conversion chart coming soon
-              </p>
-            </div>
+          <CardContent className="space-y-6">
+            {loading ? (
+              <div className="flex justify-center p-6">
+                <LoadingSpinner size="medium" />
+              </div>
+            ) : (
+              <>
+                {/* Top Customers */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-medium">Top Customers</h4>
+                    <Link to="/customers-new">
+                      <Button variant="ghost" size="sm" className="text-xs">
+                        View All
+                      </Button>
+                    </Link>
+                  </div>
+                  {topPerformers.topCustomers.length > 0 ? (
+                    <div className="space-y-2">
+                      {topPerformers.topCustomers.map((customer, index) => (
+                        <div key={customer.name} className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50">
+                          <div className="flex items-center space-x-2">
+                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                              <span className="text-xs font-medium">#{index + 1}</span>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">{customer.name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {customer.totalConversions} booking{customer.totalConversions > 1 ? 's' : ''}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-medium">{formatCurrency(customer.totalRevenue)}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No customer data available</p>
+                  )}
+                </div>
+
+                {/* Top Barbers */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-medium">Top Barbers</h4>
+                    <Link to="/barbers">
+                      <Button variant="ghost" size="sm" className="text-xs">
+                        View All
+                      </Button>
+                    </Link>
+                  </div>
+                  {topPerformers.topBarbers.length > 0 ? (
+                    <div className="space-y-2">
+                      {topPerformers.topBarbers.map((barber, index) => (
+                        <div key={barber.name} className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50">
+                          <div className="flex items-center space-x-2">
+                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                              <Star className="h-3 w-3 text-green-600 dark:text-green-400" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">{barber.name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {barber.totalConversions} conversion{barber.totalConversions > 1 ? 's' : ''}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-medium">{formatCurrency(barber.totalRevenue)}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No barber data available</p>
+                  )}
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Quick Links */}
+      {/* Quick Actions */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
         <Card>
           <CardHeader>
-            <CardTitle>Barber Analytics</CardTitle>
-            <CardDescription>View barber performance and analytics</CardDescription>
+            <CardTitle className="text-base">Customer Analytics</CardTitle>
+            <CardDescription>View detailed customer performance</CardDescription>
           </CardHeader>
           <CardContent>
-            <Link
-              to='/barbers'
-              className='inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2'
-            >
-              View Barbers
+            <Link to='/customers-new'>
+              <Button className="w-full">
+                View Customer Analytics
+              </Button>
             </Link>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Campaign Analytics (Dummy)</CardTitle>
-            <CardDescription>Track campaign performance</CardDescription>
+            <CardTitle className="text-base">Barber Analytics</CardTitle>
+            <CardDescription>Track barber performance metrics</CardDescription>
           </CardHeader>
           <CardContent>
-            <Link
-              to='/campaigns'
-              className='inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2'
-            >
-              View Campaigns
+            <Link to='/barbers'>
+              <Button className="w-full">
+                View Barber Analytics
+              </Button>
             </Link>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Conversions</CardTitle>
-            <CardDescription>Analyze conversion data</CardDescription>
+            <CardTitle className="text-base">Campaign Analytics</CardTitle>
+            <CardDescription>Monitor marketing campaign results</CardDescription>
           </CardHeader>
           <CardContent>
-            <Link
-              to='/conversions'
-              className='inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2'
-            >
-              View Conversions
+            <Link to='/campaigns'>
+              <Button className="w-full">
+                View Campaign Analytics
+              </Button>
             </Link>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Event Tracking</CardTitle>
-            <CardDescription>Browse all tracked events</CardDescription>
+            <CardTitle className="text-base">Sync & ETL</CardTitle>
+            <CardDescription>Manage data synchronization</CardDescription>
           </CardHeader>
           <CardContent>
-            <Link
-              to='/events'
-              className='inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2'
-            >
-              View Events
+            <Link to='/sync-etl'>
+              <Button className="w-full" variant="outline">
+                Manage Data Sync
+              </Button>
             </Link>
           </CardContent>
         </Card>
