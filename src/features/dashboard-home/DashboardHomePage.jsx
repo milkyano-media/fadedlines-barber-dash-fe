@@ -40,6 +40,21 @@ const DashboardHomePage = () => {
       {/* Statistics Cards */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
         <Card>
+          <CardHeader>
+            <CardTitle>Customers</CardTitle>
+            <CardDescription>View top customers and analytics</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link
+              to='/customers-new'
+              className='inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2'
+            >
+              View Customers
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Total Visits</CardTitle>
             <Activity className='h-4 w-4 text-muted-foreground' />
@@ -90,21 +105,6 @@ const DashboardHomePage = () => {
             <p className='text-xs text-muted-foreground'>Active customers</p>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Event Tracking</CardTitle>
-            <CardDescription>Browse all tracked events</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link
-              to='/events'
-              className='inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2'
-            >
-              View Events
-            </Link>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Chart Placeholders */}
@@ -139,22 +139,7 @@ const DashboardHomePage = () => {
       </div>
 
       {/* Quick Links */}
-      <div className='grid grid-cols-1 md:grid-cols-4 gap-6'>
-        <Card>
-          <CardHeader>
-            <CardTitle>Top Customers (Dummy)</CardTitle>
-            <CardDescription>View your best customers</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link
-              to='/customers'
-              className='inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2'
-            >
-              View Customers
-            </Link>
-          </CardContent>
-        </Card>
-
+      <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
         <Card>
           <CardHeader>
             <CardTitle>Campaign Analytics (Dummy)</CardTitle>
@@ -181,6 +166,21 @@ const DashboardHomePage = () => {
               className='inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2'
             >
               View Conversions
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Event Tracking</CardTitle>
+            <CardDescription>Browse all tracked events</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link
+              to='/events'
+              className='inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2'
+            >
+              View Events
             </Link>
           </CardContent>
         </Card>
