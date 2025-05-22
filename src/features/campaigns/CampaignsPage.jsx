@@ -137,7 +137,7 @@ const CampaignsPage = () => {
             setSortBy(newSortBy);
             setSortDir(newSortDir);
           }}
-          className='w-full md:w-[200px]'
+          className='w-full md:w-[280px]'
         >
           <option value='conversions_desc'>Sort by Conversions (High to Low)</option>
           <option value='conversions_asc'>Sort by Conversions (Low to High)</option>
