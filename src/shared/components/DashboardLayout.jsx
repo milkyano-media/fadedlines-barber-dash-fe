@@ -20,6 +20,7 @@ import { useTheme } from 'next-themes';
 const menuItems = [
   { path: '/dashboard', label: 'Dashboard', icon: Home },
   { path: '/customers-new', label: 'Customers', icon: TrendingUp },
+  { path: '/barbers', label: 'Barbers', icon: Users },
   { path: '/campaigns', label: 'Campaigns', icon: BarChart3 },
   { path: '/conversions', label: 'Conversions', icon: LineChart },
   { path: '/events', label: 'Events', icon: ActivitySquare },

@@ -139,7 +139,22 @@ const DashboardHomePage = () => {
       </div>
 
       {/* Quick Links */}
-      <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
+        <Card>
+          <CardHeader>
+            <CardTitle>Barber Analytics</CardTitle>
+            <CardDescription>View barber performance and analytics</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link
+              to='/barbers'
+              className='inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2'
+            >
+              View Barbers
+            </Link>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Campaign Analytics (Dummy)</CardTitle>

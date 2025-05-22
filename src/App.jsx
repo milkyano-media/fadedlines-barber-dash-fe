@@ -15,6 +15,7 @@ import ConversionsPage from './features/conversions/ConversionsPage';
 import EventsPage from './features/events/EventsPage';
 import SyncEtlPage from './features/sync-etl/SyncEtlPage';
 import CustomerAnalyticsPage from './features/analytics/CustomerAnalyticsPage';
+import BarberAnalyticsPage from './features/analytics/BarberAnalyticsPage';
 
 // Route configuration array
 const routesConfig = [
@@ -57,6 +58,10 @@ const routesConfig = [
       {
         path: 'customers-new',
         element: <CustomerAnalyticsPage />
+      },
+      {
+        path: 'barbers',
+        element: <BarberAnalyticsPage />
       }
     ]
   },
