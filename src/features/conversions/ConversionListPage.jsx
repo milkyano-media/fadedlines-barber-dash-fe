@@ -20,7 +20,7 @@ const ConversionListPage = () => {
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [influenceFilter, setInfluenceFilter] = useState(INFLUENCE_FILTERS.ALL);
-  const [sourceFilter, setSourceFilter] = useState('all'); // 'all', 'website', or 'non-web'
+  const [sourceFilter, setSourceFilter] = useState(SOURCE_TYPES.WEBSITE); // 'all', 'website', or 'non-web'
   const [dateRange, setDateRange] = useState(DATE_RANGES.LAST_30_DAYS);
   
   // State for manual refresh status
@@ -174,9 +174,9 @@ const ConversionListPage = () => {
           onChange={(e) => setSourceFilter(e.target.value)}
           className="w-full md:w-[200px]"
         >
-          <option value="all">All Sources</option>
           <option value={SOURCE_TYPES.WEBSITE}>Website</option>
           <option value={SOURCE_TYPES.NON_WEB}>Non-web</option>
+          <option value="all">All Sources</option>
         </Select>
         
         <Select

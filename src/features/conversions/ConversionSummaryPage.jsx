@@ -10,7 +10,7 @@ import dayjs from 'dayjs';
 const ConversionSummaryPage = () => {
   // Filter states
   const [dateRange, setDateRange] = useState(DATE_RANGES.LAST_30_DAYS);
-  const [sourceFilter, setSourceFilter] = useState('all');
+  const [sourceFilter, setSourceFilter] = useState(SOURCE_TYPES.WEBSITE);
 
   // State for manual refresh status
   const [isRefreshing, setIsRefreshing] = useState(false);

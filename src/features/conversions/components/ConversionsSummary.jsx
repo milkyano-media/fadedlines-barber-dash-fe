@@ -125,9 +125,9 @@ const ConversionsSummary = ({
           onChange={(e) => setSourceFilter(e.target.value)}
           className="w-full max-w-[200px]"
         >
-          <option value="all">All Sources</option>
           <option value={SOURCE_TYPES.WEBSITE}>Website</option>
           <option value={SOURCE_TYPES.NON_WEB}>Non-web</option>
+          <option value="all">All Sources</option>
         </Select>
       </div>
 
