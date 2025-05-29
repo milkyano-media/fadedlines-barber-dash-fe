@@ -276,11 +276,42 @@ const ConversionsList = ({ conversions, sourceFilter }) => {
                                 </span>
                               </p>
 
-                              <div className='text-xs font-medium mt-2'>
-                                <span className='font-bold'>
-                                  Ads Influence Score Calculation:
-                                </span>{' '}
-                                {conversion.details.score.scoreCalculation}
+                              {/* Score calculation details */}
+                              <div className='text-xs font-medium mt-2 space-y-1'>
+                                <div>
+                                  <span className='font-bold text-primary'>
+                                    Current Sequence Score:
+                                  </span>{' '}
+                                  {conversion.details?.score?.current?.calculation || 
+                                   conversion.details?.score?.scoreCalculation || 'N/A'}
+                                </div>
+                                
+                                {conversion.details?.score?.accumulative && (
+                                  <div>
+                                    <span className='font-bold text-green-600'>
+                                      Accumulative Score (Final):
+                                    </span>{' '}
+                                    {conversion.details.score.accumulative.calculation}
+                                  </div>
+                                )}
+                                
+                                {conversion.details?.score?.previousSequences && 
+                                 conversion.details.score.previousSequences.length > 0 && (
+                                  <div className='mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md'>
+                                    <div className='font-bold text-blue-800 dark:text-blue-300 text-xs mb-1'>
+                                      Previous Conversions for this Customer:
+                                    </div>
+                                    <div className='space-y-1'>
+                                      {conversion.details.score.previousSequences.map((prev, idx) => (
+                                        <div key={idx} className='text-xs text-blue-700 dark:text-blue-400'>
+                                          <span className='font-medium'>#{idx + 1}:</span> {' '}
+                                          {new Date(prev.bookingDate).toLocaleDateString()} - {' '}
+                                          {prev.visits} visits, {prev.points} points ({prev.score}%)
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             </div>
 
@@ -437,6 +468,19 @@ const ConversionsList = ({ conversions, sourceFilter }) => {
                                     )}{' '}
                                     ({conversion.adsInfluenceScore}%)
                                   </p>
+                                  
+                                  {/* Show breakdown if accumulative data exists */}
+                                  {conversion.details?.score?.current && conversion.details?.score?.accumulative && (
+                                    <div className='text-xs text-muted-foreground mt-1 space-y-0.5'>
+                                      <div>Current: {conversion.details.score.current.score}%</div>
+                                      <div className='font-medium'>Final: {conversion.details.score.accumulative.score}%</div>
+                                      {conversion.details.score.previousSequences?.length > 0 && (
+                                        <div className='text-blue-600 dark:text-blue-400'>
+                                          (+{conversion.details.score.previousSequences.length} previous)
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
                                 <div className='mt-2 sm:mt-0'>
                                   <h5 className='text-sm font-medium'>
