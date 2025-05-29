@@ -13,6 +13,7 @@ const SyncEtlPage = () => {
   const [syncInProgress, setSyncInProgress] = useState(false);
   const [etlInProgress, setEtlInProgress] = useState(false);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   // Fetch initial status
   useEffect(() => {
@@ -93,7 +94,16 @@ const SyncEtlPage = () => {
       let response;
       switch (type) {
         case 'conversions':
+          // Process conversions asynchronously with no timeout
           response = await syncEtlService.processConversions();
+          
+          // Show success message with results
+          if (response && response.data) {
+            const { totalProcessed, added, updated, skipped } = response.data;
+            setSuccessMessage(`ETL completed: ${totalProcessed} processed, ${added} added, ${updated} updated, ${skipped} skipped`);
+            // Clear success message after 5 seconds
+            setTimeout(() => setSuccessMessage(null), 5000);
+          }
           break;
         default:
           throw new Error('Invalid ETL type');
@@ -105,7 +115,12 @@ const SyncEtlPage = () => {
       return response;
     } catch (err) {
       console.error(`Error running ${type} ETL:`, err);
-      setError(`Failed to run ${type} ETL operation`);
+      // Check if it's a timeout error and provide more specific message
+      if (err.code === 'ECONNABORTED') {
+        setError(`${type} ETL is taking longer than expected. The process is still running in the background.`);
+      } else {
+        setError(`Failed to run ${type} ETL operation`);
+      }
     } finally {
       setEtlInProgress(false);
     }
@@ -142,6 +157,13 @@ const SyncEtlPage = () => {
       {error && (
         <div className="bg-destructive/10 text-destructive p-4 rounded-md">
           <p className="text-sm font-medium">{error}</p>
+        </div>
+      )}
+      
+      {/* Success message */}
+      {successMessage && (
+        <div className="bg-green-50 text-green-800 p-4 rounded-md">
+          <p className="text-sm font-medium">{successMessage}</p>
         </div>
       )}
 
@@ -271,7 +293,7 @@ const SyncEtlPage = () => {
                   {etlInProgress ? (
                     <>
                       <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                      Processing Conversions...
+                      Processing Conversions (No timeout)...
                     </>
                   ) : (
                     <>
@@ -280,6 +302,11 @@ const SyncEtlPage = () => {
                     </>
                   )}
                 </Button>
+                {etlInProgress && (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    This process may take several minutes. The request will not timeout.
+                  </p>
+                )}
               </CardContent>
             </Card>
           </div>

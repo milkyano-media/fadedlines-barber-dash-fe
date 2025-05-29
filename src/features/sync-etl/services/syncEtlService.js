@@ -94,7 +94,10 @@ export const syncEtlService = {
    */
   async processConversions() {
     try {
-      const response = await v2Client.axiosInstance.post('/etl/conversions');
+      // Create a custom axios instance without timeout for long-running ETL process
+      const response = await v2Client.axiosInstance.post('/etl/conversions', {}, {
+        timeout: 0 // No timeout for this request
+      });
       return response.data;
     } catch (error) {
       console.error('Failed to process conversions ETL:', error);
