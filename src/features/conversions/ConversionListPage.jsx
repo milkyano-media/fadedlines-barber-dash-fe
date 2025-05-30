@@ -138,7 +138,7 @@ const ConversionListPage = () => {
         <div className="w-full md:w-1/3 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by booking ID, barber, customer, or campaign..."
+            placeholder="Search by booking ID, barber, customer, campaign, or UTM parameters..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 w-full"
