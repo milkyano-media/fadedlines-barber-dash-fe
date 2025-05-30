@@ -87,6 +87,9 @@ const CustomTooltip = ({ active, payload }) => {
         <strong>{data.count}</strong> conversion{data.count !== 1 ? 's' : ''} ({data.percentage}%)
       </p>
       <p className="text-muted-foreground text-xs">
+        Avg Influence: <strong>{data.averageScore || 0}%</strong>
+      </p>
+      <p className="text-muted-foreground text-xs">
         Revenue: <strong>${Math.round(data.revenue).toLocaleString()}</strong>
       </p>
     </div>
@@ -254,7 +257,7 @@ const ConversionsSummary = ({
                       align="center"
                       iconSize={12}
                       iconType="circle"
-                      formatter={(value, entry) => (
+                      formatter={(value) => (
                         <span className="text-foreground text-sm">{value}</span>
                       )}
                       wrapperStyle={{
@@ -274,6 +277,7 @@ const ConversionsSummary = ({
                       <th className="text-left pb-2">Influence Level</th>
                       <th className="text-right pb-2">Count</th>
                       <th className="text-right pb-2">Percentage</th>
+                      <th className="text-right pb-2">Avg Infl</th>
                       <th className="text-right pb-2">Revenue</th>
                     </tr>
                   </thead>
@@ -289,6 +293,7 @@ const ConversionsSummary = ({
                         </td>
                         <td className="py-2 text-right">{level.count}</td>
                         <td className="py-2 text-right">{level.percentage}%</td>
+                        <td className="py-2 text-right">{level.averageScore || 0}%</td>
                         <td className="py-2 text-right">${Math.round(level.revenue).toLocaleString()}</td>
                       </tr>
                     ))}
