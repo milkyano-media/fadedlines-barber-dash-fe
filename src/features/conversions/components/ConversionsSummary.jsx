@@ -7,12 +7,15 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, Sector } from 'recharts';
 
+// Store previous label positions to avoid overlap
+let labelPositions = [];
+
 // Custom label renderer for pie chart with external labels
 const renderCustomizedLabel = (props) => {
-  const { cx, cy, midAngle, innerRadius, outerRadius, percent, index, value, name, fill } = props;
+  const { cx, cy, midAngle, innerRadius, outerRadius, percent, index, value, name, fill, payload } = props;
   
-  // Skip labels for very small segments
-  if (percent < 0.05) return null;
+  // Reset positions for first label
+  if (index === 0) labelPositions = [];
   
   const RADIAN = Math.PI / 180;
   const sin = Math.sin(-RADIAN * midAngle);
@@ -22,13 +25,37 @@ const renderCustomizedLabel = (props) => {
   const sx = cx + outerRadius * cos;
   const sy = cy + outerRadius * sin;
   
+  // For small segments, extend the line further to avoid overlap
+  const lineExtension = percent < 0.01 ? 90 : percent < 0.05 ? 70 : 45;
+  const labelOffset = percent < 0.05 ? 20 : 12;
+  
   // Ending point of the line (extend further for better spacing)
-  const ex = cx + (outerRadius + 45) * cos;
-  const ey = cy + (outerRadius + 45) * sin;
+  const ex = cx + (outerRadius + lineExtension) * cos;
+  let ey = cy + (outerRadius + lineExtension) * sin;
   
   // Text position and anchor (more spacing from end of line)
-  const tx = ex + (cos >= 0 ? 12 : -12);
-  const ty = ey;
+  const tx = ex + (cos >= 0 ? labelOffset : -labelOffset);
+  let ty = ey;
+  
+  // Check for overlap with previous labels and adjust
+  const minDistance = 35; // Minimum vertical distance between labels
+  for (const pos of labelPositions) {
+    if (Math.abs(pos.x - tx) < 100) { // If horizontally close
+      const verticalDistance = Math.abs(pos.y - ty);
+      if (verticalDistance < minDistance) {
+        // Adjust position based on which side we're on
+        if (cos >= 0) { // Right side
+          ty = pos.y + (ty > pos.y ? minDistance : -minDistance);
+        } else { // Left side
+          ty = pos.y + (ty > pos.y ? minDistance : -minDistance);
+        }
+      }
+    }
+  }
+  
+  // Store this label's position
+  labelPositions.push({ x: tx, y: ty });
+  
   const textAnchor = cos >= 0 ? 'start' : 'end';
   
   // Intermediate point for curved or angled line
@@ -39,7 +66,7 @@ const renderCustomizedLabel = (props) => {
     <g>
       {/* Line from pie to label */}
       <path 
-        d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} 
+        d={`M${sx},${sy}L${mx},${my}L${ex},${ey}L${tx - (cos >= 0 ? labelOffset - 5 : -labelOffset + 5)},${ty}`} 
         stroke={fill} 
         fill="none" 
         strokeWidth={1.5} 
@@ -47,24 +74,36 @@ const renderCustomizedLabel = (props) => {
       
       {/* Small dot at the end of the line */}
       <circle 
-        cx={ex} 
-        cy={ey} 
+        cx={tx - (cos >= 0 ? labelOffset - 5 : -labelOffset + 5)} 
+        cy={ty} 
         r={2.5} 
         fill={fill} 
         stroke="none" 
       />
       
+      {/* Label text - influence level name */}
+      <text 
+        x={tx} 
+        y={ty - 8} 
+        textAnchor={textAnchor} 
+        fill="currentColor"
+        fontSize={12}
+        dominantBaseline="middle"
+      >
+        {payload.level}
+      </text>
+      
       {/* Percentage text */}
       <text 
         x={tx} 
-        y={ty} 
+        y={ty + 8} 
         textAnchor={textAnchor} 
         fill="currentColor"
         fontSize={13}
         fontWeight="600"
         dominantBaseline="middle"
       >
-        {`${(percent * 100).toFixed(0)}%`}
+        {`${(percent * 100).toFixed(1)}%`}
       </text>
     </g>
   );
@@ -230,7 +269,7 @@ const ConversionsSummary = ({
               {/* Pie Chart */}
               <div className="h-96 flex items-center justify-center" aria-label="Influence Level Distribution Pie Chart">
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart margin={{ top: 40, right: 80, bottom: 30, left: 80 }}>
+                  <PieChart margin={{ top: 60, right: 150, bottom: 30, left: 60 }}>
                     <Pie
                       data={summaryData.influenceLevelBreakdown}
                       cx="50%"
@@ -292,7 +331,7 @@ const ConversionsSummary = ({
                           {level.level}
                         </td>
                         <td className="py-2 text-right">{level.count}</td>
-                        <td className="py-2 text-right">{level.percentage}%</td>
+                        <td className="py-2 text-right">{Number(level.percentage).toFixed(1)}%</td>
                         <td className="py-2 text-right">{level.averageScore || 0}%</td>
                         <td className="py-2 text-right">${Math.round(level.revenue).toLocaleString()}</td>
                       </tr>
