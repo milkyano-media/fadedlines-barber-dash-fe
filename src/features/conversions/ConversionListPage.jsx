@@ -200,8 +200,6 @@ const ConversionListPage = () => {
         >
           <option value="bookingDate_desc">Booking Date (Newest First)</option>
           <option value="bookingDate_asc">Booking Date (Oldest First)</option>
-          <option value="createdAt_desc">Created Date (Newest First)</option>
-          <option value="createdAt_asc">Created Date (Oldest First)</option>
         </Select>
       </div>
 

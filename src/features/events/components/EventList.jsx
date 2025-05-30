@@ -12,7 +12,9 @@ import {
   Clock,
   Link,
   ExternalLink,
-  Globe
+  Globe,
+  Copy,
+  Check
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,8 +30,16 @@ dayjs.extend(relativeTime);
 /**
  * List component for displaying events with accordion functionality
  */
-const EventList = ({ events, onDeleteEvent }) => {
+const EventList = ({ 
+  events, 
+  onDeleteEvent, 
+  selectedEvents = new Set(), 
+  onEventSelect, 
+  onSelectAll, 
+  isSelectAll = false 
+}) => {
   const [expandedRows, setExpandedRows] = useState({});
+  const [copiedIds, setCopiedIds] = useState({});
 
   // Toggle accordion expansion for a row
   const toggleRow = (id) => {
@@ -79,6 +89,33 @@ const EventList = ({ events, onDeleteEvent }) => {
     }
   };
 
+  // Handle copy sequence ID
+  const handleCopySequenceId = async (sequenceId, e) => {
+    e.stopPropagation(); // Prevent row expansion
+    try {
+      await navigator.clipboard.writeText(sequenceId);
+      setCopiedIds(prev => ({ ...prev, [sequenceId]: true }));
+      setTimeout(() => {
+        setCopiedIds(prev => ({ ...prev, [sequenceId]: false }));
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+    }
+  };
+
+  // Handle individual checkbox change
+  const handleCheckboxChange = (eventId, e) => {
+    e.stopPropagation(); // Prevent row expansion
+    const isSelected = e.target.checked;
+    onEventSelect?.(eventId, isSelected);
+  };
+
+  // Handle select all checkbox
+  const handleSelectAllChange = (e) => {
+    e.stopPropagation();
+    onSelectAll?.(e.target.checked);
+  };
+
   if (!events || events.length === 0) {
     return (
       <div className='text-center py-8 text-muted-foreground'>
@@ -94,6 +131,14 @@ const EventList = ({ events, onDeleteEvent }) => {
           <table className='w-full caption-bottom text-sm'>
             <thead className='[&_tr]:border-b bg-muted/50'>
               <tr className='border-b transition-colors'>
+                <th className='h-10 px-4 text-left align-middle font-medium'>
+                  <input
+                    type="checkbox"
+                    checked={isSelectAll}
+                    onChange={handleSelectAllChange}
+                    className="rounded"
+                  />
+                </th>
                 <th className='h-10 px-4 text-left align-middle font-medium'>
                   ID
                 </th>
@@ -123,6 +168,16 @@ const EventList = ({ events, onDeleteEvent }) => {
                     }`}
                     onClick={() => toggleRow(event.id)}
                   >
+                    {/* Checkbox Column */}
+                    <td className='p-4 align-middle'>
+                      <input
+                        type="checkbox"
+                        checked={selectedEvents.has(event.id)}
+                        onChange={(e) => handleCheckboxChange(event.id, e)}
+                        className="rounded"
+                      />
+                    </td>
+
                     {/* ID Column */}
                     <td className='p-4 align-middle font-mono text-xs'>
                       {event.id}
@@ -187,12 +242,27 @@ const EventList = ({ events, onDeleteEvent }) => {
                     <td className='p-4 align-middle'>
                       {event.conversionSequenceId ? (
                         <div className='flex flex-col'>
-                          <span
-                            className='font-mono text-xs truncate max-w-24'
-                            title={event.conversionSequenceId}
-                          >
-                            {event.conversionSequenceId.substring(0, 8)}...
-                          </span>
+                          <div className='flex items-center gap-1'>
+                            <span
+                              className='font-mono text-xs truncate max-w-24'
+                              title={event.conversionSequenceId}
+                            >
+                              {event.conversionSequenceId.substring(0, 8)}...
+                            </span>
+                            <Button
+                              variant='ghost'
+                              size='sm'
+                              className='p-1 h-auto'
+                              onClick={(e) => handleCopySequenceId(event.conversionSequenceId, e)}
+                              title='Copy full sequence ID'
+                            >
+                              {copiedIds[event.conversionSequenceId] ? (
+                                <Check className='h-3 w-3 text-green-500' />
+                              ) : (
+                                <Copy className='h-3 w-3' />
+                              )}
+                            </Button>
+                          </div>
                           <span className='text-xs text-indigo-500 dark:text-indigo-400'>
                             Has Sequence
                           </span>
@@ -228,7 +298,7 @@ const EventList = ({ events, onDeleteEvent }) => {
                   {/* Expanded content */}
                   {expandedRows[event.id] && (
                     <tr>
-                      <td colSpan={6} className='p-0'>
+                      <td colSpan={7} className='p-0'>
                         <div className='p-4 bg-muted/10 border-b'>
                           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                             {/* Left column */}

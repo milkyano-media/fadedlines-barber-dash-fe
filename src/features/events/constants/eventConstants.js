@@ -18,9 +18,7 @@ export const DATE_RANGES = {
 // Sort options
 export const SORT_OPTIONS = {
   CREATED_AT_DESC: 'createdAt_desc',
-  CREATED_AT_ASC: 'createdAt_asc',
-  EVENT_NAME_ASC: 'eventName_asc',
-  EVENT_NAME_DESC: 'eventName_desc'
+  CREATED_AT_ASC: 'createdAt_asc'
 };
 
 // Badge colors for different event types

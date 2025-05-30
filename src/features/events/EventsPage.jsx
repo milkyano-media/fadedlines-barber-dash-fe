@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
-import { RefreshCw, Search } from 'lucide-react';
+import { RefreshCw, Search, Trash2 } from 'lucide-react';
 import EventList from './components/EventList';
 import { EVENT_TYPES, DATE_RANGES, SORT_OPTIONS } from './constants/eventConstants';
 import { useEvents } from './hooks/useEvents';
@@ -29,6 +29,11 @@ const EventsPage = () => {
   
   // State for manual refresh status
   const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  // State for multi-selection
+  const [selectedEvents, setSelectedEvents] = useState(new Set());
+  const [isSelectAll, setIsSelectAll] = useState(false);
+  const [isDeletingMultiple, setIsDeletingMultiple] = useState(false);
   
   // Debounce the search term
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
@@ -72,8 +77,7 @@ const EventsPage = () => {
   const queryParams = {
     page: currentPage,
     size: 10,
-    conversionSequenceId: debouncedSearchTerm || undefined,
-    uniqueVisitorId: debouncedSearchTerm || undefined,
+    search: debouncedSearchTerm || undefined, // Universal search field
     eventName: eventType !== EVENT_TYPES.ALL ? eventType : undefined,
     ...getDateRangeParams(),
     ...getSortParams()
@@ -95,6 +99,9 @@ const EventsPage = () => {
     try {
       // Reset to page 1 on refresh
       setCurrentPage(1);
+      // Clear selections on refresh
+      setSelectedEvents(new Set());
+      setIsSelectAll(false);
       
       // Refresh events list
       const refreshParams = {
@@ -109,6 +116,58 @@ const EventsPage = () => {
     }
   };
 
+  // Handle event selection
+  const handleEventSelect = (eventId, isSelected) => {
+    const newSelectedEvents = new Set(selectedEvents);
+    if (isSelected) {
+      newSelectedEvents.add(eventId);
+    } else {
+      newSelectedEvents.delete(eventId);
+    }
+    setSelectedEvents(newSelectedEvents);
+    
+    // Update select all state
+    if (events && events.length > 0) {
+      setIsSelectAll(newSelectedEvents.size === events.length);
+    }
+  };
+
+  // Handle select all
+  const handleSelectAll = (selectAll) => {
+    if (selectAll && events) {
+      setSelectedEvents(new Set(events.map(event => event.id)));
+    } else {
+      setSelectedEvents(new Set());
+    }
+    setIsSelectAll(selectAll);
+  };
+
+  // Handle bulk delete
+  const handleBulkDelete = async () => {
+    if (selectedEvents.size === 0) return;
+    
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${selectedEvents.size} selected event(s)? This action cannot be undone.`
+    );
+    
+    if (!confirmed) return;
+    
+    setIsDeletingMultiple(true);
+    try {
+      // Delete events one by one (could be optimized with batch API)
+      const deletePromises = Array.from(selectedEvents).map(eventId => deleteEvent(eventId));
+      await Promise.all(deletePromises);
+      
+      // Clear selections
+      setSelectedEvents(new Set());
+      setIsSelectAll(false);
+    } catch (error) {
+      console.error('Error deleting events:', error);
+    } finally {
+      setIsDeletingMultiple(false);
+    }
+  };
+
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
@@ -118,15 +177,28 @@ const EventsPage = () => {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <h1 className="text-3xl font-bold">Events</h1>
-        <Button 
-          variant="outline" 
-          onClick={handleRefresh} 
-          disabled={loading || isRefreshing}
-          className="flex items-center gap-2"
-        >
-          <RefreshCw className={`h-4 w-4 ${(loading || isRefreshing) ? 'animate-spin' : ''}`} />
-          Refresh Data
-        </Button>
+        <div className="flex items-center gap-2">
+          {selectedEvents.size > 0 && (
+            <Button 
+              variant="destructive" 
+              onClick={handleBulkDelete} 
+              disabled={isDeletingMultiple}
+              className="flex items-center gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete {selectedEvents.size} Selected
+            </Button>
+          )}
+          <Button 
+            variant="outline" 
+            onClick={handleRefresh} 
+            disabled={loading || isRefreshing}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${(loading || isRefreshing) ? 'animate-spin' : ''}`} />
+            Refresh Data
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -134,9 +206,13 @@ const EventsPage = () => {
         <div className="w-full md:w-1/3 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by sequence ID or visitor ID..."
+            placeholder="Search by sequence ID, visitor ID, session ID, or event properties..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onInput={(e) => {
+              // Handle all input events including paste
+              setSearchTerm(e.target.value);
+            }}
             className="pl-10 w-full"
           />
         </div>
@@ -170,8 +246,6 @@ const EventsPage = () => {
           >
             <option value={SORT_OPTIONS.CREATED_AT_DESC}>Newest First</option>
             <option value={SORT_OPTIONS.CREATED_AT_ASC}>Oldest First</option>
-            <option value={SORT_OPTIONS.EVENT_NAME_ASC}>Event Type (A-Z)</option>
-            <option value={SORT_OPTIONS.EVENT_NAME_DESC}>Event Type (Z-A)</option>
           </Select>
         </div>
       </div>
@@ -195,17 +269,35 @@ const EventsPage = () => {
         <EventList 
           events={events} 
           onDeleteEvent={deleteEvent}
+          selectedEvents={selectedEvents}
+          onEventSelect={handleEventSelect}
+          onSelectAll={handleSelectAll}
+          isSelectAll={isSelectAll}
         />
       )}
 
-      {/* Pagination */}
-      {meta && meta.totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={meta.totalPages}
-          onPageChange={setCurrentPage}
-          meta={meta}
-        />
+      {/* Pagination and Results Info */}
+      {meta && (
+        <div className="space-y-4">
+          {/* Results summary */}
+          <div className="text-sm text-muted-foreground text-center">
+            {meta.totalElements === 0 ? (
+              'No events found'
+            ) : (
+              `Showing ${((currentPage - 1) * meta.size) + 1}-${Math.min(currentPage * meta.size, meta.totalElements)} of ${meta.totalElements} events`
+            )}
+          </div>
+          
+          {/* Pagination (show if more than 1 page OR when searching to show context) */}
+          {(meta.totalPages > 1 || debouncedSearchTerm) && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={meta.totalPages}
+              onPageChange={setCurrentPage}
+              meta={meta}
+            />
+          )}
+        </div>
       )}
     </div>
   );
