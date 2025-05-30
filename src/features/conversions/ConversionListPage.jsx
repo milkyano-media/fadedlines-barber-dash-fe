@@ -22,6 +22,7 @@ const ConversionListPage = () => {
   const [influenceFilter, setInfluenceFilter] = useState(INFLUENCE_FILTERS.ALL);
   const [sourceFilter, setSourceFilter] = useState(SOURCE_TYPES.WEBSITE); // 'all', 'website', or 'non-web'
   const [dateRange, setDateRange] = useState(DATE_RANGES.LAST_30_DAYS);
+  const [sortOrder, setSortOrder] = useState('bookingDate_desc'); // Default to newest bookings first
   
   // State for manual refresh status
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -79,7 +80,8 @@ const ConversionListPage = () => {
       influenceLevel: influenceFilter !== INFLUENCE_FILTERS.ALL ? influenceFilter : undefined,
       source: sourceFilter !== 'all' ? sourceFilter : undefined,
       startDate,
-      endDate
+      endDate,
+      sort: sortOrder
     };
     
     console.log('Fetching conversions with params:', queryParams);
@@ -94,7 +96,7 @@ const ConversionListPage = () => {
         }
       })
       .catch(error => console.error('Error fetching conversions:', error));
-  }, [currentPage, deferredSearchTerm, influenceFilter, sourceFilter, dateRange]);
+  }, [currentPage, deferredSearchTerm, influenceFilter, sourceFilter, dateRange, sortOrder]);
 
   // Handle refresh
   const handleRefresh = async () => {
@@ -115,7 +117,8 @@ const ConversionListPage = () => {
         influenceLevel: influenceFilter !== INFLUENCE_FILTERS.ALL ? influenceFilter : undefined,
         source: sourceFilter !== 'all' ? sourceFilter : undefined,
         startDate,
-        endDate
+        endDate,
+        sort: sortOrder
       };
       
       await fetchConversions(refreshParams);
@@ -129,7 +132,7 @@ const ConversionListPage = () => {
   // Reset to page 1 when filters change
   useEffect(() => {
     if (currentPage !== 1) setCurrentPage(1);
-  }, [influenceFilter, sourceFilter, dateRange, deferredSearchTerm]);
+  }, [influenceFilter, sourceFilter, dateRange, deferredSearchTerm, sortOrder]);
 
   return (
     <div className="space-y-6">
@@ -188,6 +191,17 @@ const ConversionListPage = () => {
           <option value={DATE_RANGES.LAST_30_DAYS}>Last 30 days</option>
           <option value={DATE_RANGES.LAST_90_DAYS}>Last 90 days</option>
           <option value={DATE_RANGES.ALL_TIME}>All time</option>
+        </Select>
+        
+        <Select
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value)}
+          className="w-full md:w-[200px]"
+        >
+          <option value="bookingDate_desc">Booking Date (Newest First)</option>
+          <option value="bookingDate_asc">Booking Date (Oldest First)</option>
+          <option value="createdAt_desc">Created Date (Newest First)</option>
+          <option value="createdAt_asc">Created Date (Oldest First)</option>
         </Select>
       </div>
 

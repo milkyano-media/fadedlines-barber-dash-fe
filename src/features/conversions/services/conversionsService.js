@@ -14,6 +14,7 @@ export const conversionsService = {
    * @param {string} [params.startDate] - Start date filter
    * @param {string} [params.endDate] - End date filter
    * @param {string} [params.teamMemberId] - Team member ID filter
+   * @param {string} [params.sort] - Sort order (bookingDate_desc, bookingDate_asc, createdAt_desc, createdAt_asc)
    * @returns {Promise<import('../types/conversionTypes').ConversionsResponse>}
    */
   async getConversions(params = {}) {

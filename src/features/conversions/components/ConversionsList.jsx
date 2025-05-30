@@ -114,6 +114,9 @@ const ConversionsList = ({ conversions, sourceFilter }) => {
                     Barber
                   </th>
                   <th className='h-10 px-4 text-left align-middle font-medium'>
+                    Date
+                  </th>
+                  <th className='h-10 px-4 text-left align-middle font-medium'>
                     Campaign
                   </th>
                   <th className='h-10 px-4 text-left align-middle font-medium'>
@@ -130,7 +133,7 @@ const ConversionsList = ({ conversions, sourceFilter }) => {
               <tbody className='[&_tr:last-child]:border-0'>
                 {conversions.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className='p-4 align-middle text-center'>
+                    <td colSpan={9} className='p-4 align-middle text-center'>
                       No conversions found matching your search criteria
                     </td>
                   </tr>
@@ -186,6 +189,17 @@ const ConversionsList = ({ conversions, sourceFilter }) => {
                           ) : (
                             <span className='text-muted-foreground'>
                               Not assigned
+                            </span>
+                          )}
+                        </td>
+                        <td className='p-4 align-middle'>
+                          {conversion.bookingDate ? (
+                            <span className='text-sm'>
+                              {dayjs(conversion.bookingDate).format('MMM D, YYYY')}
+                            </span>
+                          ) : (
+                            <span className='text-muted-foreground'>
+                              N/A
                             </span>
                           )}
                         </td>
@@ -259,7 +273,7 @@ const ConversionsList = ({ conversions, sourceFilter }) => {
                       </tr>
                       {expandedRows[conversion.id] && (
                         <tr>
-                          <td colSpan={8} className='bg-muted/20 p-4'>
+                          <td colSpan={9} className='bg-muted/20 p-4'>
                             <div className='mb-3'>
                               <h4 className='font-medium text-sm'>
                                 Customer Journey
