@@ -46,6 +46,27 @@ class ApiClient {
       }
     );
   }
+
+  // HTTP methods
+  get(url, config) {
+    return this.axiosInstance.get(url, config);
+  }
+
+  post(url, data, config) {
+    return this.axiosInstance.post(url, data, config);
+  }
+
+  put(url, data, config) {
+    return this.axiosInstance.put(url, data, config);
+  }
+
+  patch(url, data, config) {
+    return this.axiosInstance.patch(url, data, config);
+  }
+
+  delete(url, config) {
+    return this.axiosInstance.delete(url, config);
+  }
 }
 
 const v2Client = new ApiClient(`${API_BASE_URL}${API_V2}`);
