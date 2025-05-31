@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { API_BASE_URL, API_V1, API_V2 } from '../config/apiConfig';
+import { API_BASE_URL, API_V2 } from '../config/apiConfig';
 
 class ApiClient {
   constructor(baseURL) {
@@ -36,10 +36,11 @@ class ApiClient {
 
         // Handle auth errors (e.g., token expired)
         if (error.response && error.response.status === 401) {
-          // You might want to redirect to login or refresh token
           console.error('Authentication error:', error);
           localStorage.removeItem('auth_token');
-          window.location.href = '/login';
+          localStorage.removeItem('user_data');
+          // Don't redirect here - let React Router handle it
+          // window.location.href = '/login';
         }
 
         return Promise.reject(error);

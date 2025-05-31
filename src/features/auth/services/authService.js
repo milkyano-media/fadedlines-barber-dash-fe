@@ -16,7 +16,7 @@ export const authService = {
    */
   async login(credentials) {
     try {
-      const response = await v2Client.axiosInstance.post('/auth/login', credentials);
+      const response = await v2Client.post('/auth/login', credentials);
       const data = response.data;
       
       if (data.token) {
@@ -37,8 +37,8 @@ export const authService = {
   logout() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
-    // Redirect to login page
-    window.location.href = '/login';
+    // Don't redirect here - let React Router handle it
+    // window.location.href = '/login';
   },
 
   /**
