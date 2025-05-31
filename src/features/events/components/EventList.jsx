@@ -5,14 +5,11 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import {
   ChevronDown,
   ChevronUp,
-  User,
   Calendar,
   Activity,
   Trash2,
-  Clock,
   Link,
   ExternalLink,
-  Globe,
   Copy,
   Check
 } from 'lucide-react';
@@ -53,7 +50,7 @@ const EventList = ({
   const formatDate = (dateString) => {
     try {
       return dayjs(dateString).format('YYYY-MM-DD HH:mm:ss');
-    } catch (error) {
+    } catch {
       return dateString;
     }
   };
@@ -62,7 +59,7 @@ const EventList = ({
   const formatRelativeTime = (dateString) => {
     try {
       return dayjs(dateString).fromNow();
-    } catch (error) {
+    } catch {
       return '';
     }
   };

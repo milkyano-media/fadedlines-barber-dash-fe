@@ -171,6 +171,9 @@ const EventsPage = () => {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
+    // Clear selections when search/filters change
+    setSelectedEvents(new Set());
+    setIsSelectAll(false);
   }, [eventType, dateRange, sortBy, debouncedSearchTerm]);
 
   return (
@@ -209,10 +212,6 @@ const EventsPage = () => {
             placeholder="Search by sequence ID, visitor ID, session ID, or event properties..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            onInput={(e) => {
-              // Handle all input events including paste
-              setSearchTerm(e.target.value);
-            }}
             className="pl-10 w-full"
           />
         </div>

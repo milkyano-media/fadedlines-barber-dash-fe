@@ -64,6 +64,9 @@ export function useEvents(options = {}) {
     options.eventName,
     options.conversionSequenceId,
     options.uniqueVisitorId,
+    options.search,
+    options.sortBy,
+    options.sortDir,
     options.startDate,
     options.endDate
   ]);
