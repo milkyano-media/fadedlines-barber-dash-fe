@@ -27,7 +27,7 @@ const BarberManagement = () => {
 
   const [editingMember, setEditingMember] = useState(null);
   const [formData, setFormData] = useState({
-    employmentType: 'CHAIR_RENTAL',
+    employmentType: '',
     monthlyRate: '',
     chairRentalRate: '',
     notes: ''
@@ -52,7 +52,7 @@ const BarberManagement = () => {
   const handleEdit = (member) => {
     setEditingMember(member.squareId);
     setFormData({
-      employmentType: member.details?.employmentType || 'CHAIR_RENTAL',
+      employmentType: member.details?.employmentType || '',
       monthlyRate: member.details?.monthlyRate || '',
       chairRentalRate: member.details?.chairRentalRate || '',
       notes: member.details?.notes || ''
@@ -72,9 +72,13 @@ const BarberManagement = () => {
   const handleSave = async (memberId) => {
     try {
       const dataToSave = {
-        employmentType: formData.employmentType,
         notes: formData.notes
       };
+
+      // Only include employment type if selected
+      if (formData.employmentType) {
+        dataToSave.employmentType = formData.employmentType;
+      }
 
       // Only include rates if they have values
       if (formData.monthlyRate) {
@@ -87,7 +91,7 @@ const BarberManagement = () => {
       await updateTeamMemberDetail(memberId, dataToSave);
       setEditingMember(null);
       setFormData({
-        employmentType: 'CHAIR_RENTAL',
+        employmentType: '',
         monthlyRate: '',
         chairRentalRate: '',
         notes: ''
@@ -110,24 +114,37 @@ const BarberManagement = () => {
   const handleDragEnd = async (result) => {
     if (!result.destination) return;
 
+    const sourceIndex = result.source.index;
+    const destinationIndex = result.destination.index;
+    
+    if (sourceIndex === destinationIndex) return;
+
     const newOrderedMembers = Array.from(orderedTeamMembers);
-    const [reorderedItem] = newOrderedMembers.splice(result.source.index, 1);
-    newOrderedMembers.splice(result.destination.index, 0, reorderedItem);
+    const [reorderedItem] = newOrderedMembers.splice(sourceIndex, 1);
+    newOrderedMembers.splice(destinationIndex, 0, reorderedItem);
 
     // Update local state immediately for better UX
     setOrderedTeamMembers(newOrderedMembers);
 
-    // Update display order for each member
+    // Calculate affected range - only update items that actually changed position
+    const minIndex = Math.min(sourceIndex, destinationIndex);
+    const maxIndex = Math.max(sourceIndex, destinationIndex);
+    
     try {
-      const updatePromises = newOrderedMembers.map((member, index) => {
+      // Only update members in the affected range
+      const updatePromises = [];
+      for (let i = minIndex; i <= maxIndex; i++) {
+        const member = newOrderedMembers[i];
         const updateData = {
-          ...member.details,
-          displayOrder: index + 1
+          displayOrder: i + 1
         };
-        return updateTeamMemberDetail(member.squareId, updateData);
-      });
+        updatePromises.push(updateTeamMemberDetail(member.squareId, updateData));
+      }
       
       await Promise.all(updatePromises);
+      
+      // Refetch to ensure we have the latest data
+      await fetchTeamMembers();
     } catch (err) {
       console.error('Error updating member order:', err);
       // Revert on error
@@ -244,7 +261,7 @@ const BarberManagement = () => {
                               
                               <div className="col-span-2">
                                 <label className="text-xs font-medium mb-2 block">
-                                  Employment Type *
+                                  Employment Type
                                 </label>
                                 <Select
                                   value={formData.employmentType}
@@ -253,6 +270,7 @@ const BarberManagement = () => {
                                   }
                                   className="h-9"
                                 >
+                                  <option value="">Not set</option>
                                   <option value="CHAIR_RENTAL">Chair Rental</option>
                                   <option value="EMPLOYEE">Employee</option>
                                 </Select>
@@ -355,7 +373,7 @@ const BarberManagement = () => {
                               <div className="col-span-3">
                                 <div className="font-medium">{member.givenName} {member.familyName}</div>
                                 <div className="text-xs text-muted-foreground mt-1">
-                                  Order: {(member.details?.displayOrder || index + 1)}
+                                  Order: {index + 1}
                                 </div>
                               </div>
                               
