@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
+  CardContent
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -222,9 +219,9 @@ const BarberManagement = () => {
                       >
                         {editingMember === member.squareId ? (
                           /* Editing Row */
-                          <div className="p-4">
-                            <div className="grid grid-cols-12 gap-4 items-start">
-                              <div className="col-span-1 flex items-center pt-2">
+                          <div className="p-4 bg-muted/20">
+                            <div className="grid grid-cols-12 gap-4 items-end">
+                              <div className="col-span-1 flex items-center pb-2">
                                 <div
                                   {...provided.dragHandleProps}
                                   className="cursor-grab active:cursor-grabbing"
@@ -234,8 +231,8 @@ const BarberManagement = () => {
                               </div>
                               
                               <div className="col-span-3">
-                                <div className="font-medium">{member.givenName} {member.familyName}</div>
-                                <div className="text-xs text-muted-foreground mt-1">
+                                <div className="font-medium text-sm mb-2">{member.givenName} {member.familyName}</div>
+                                <div className="text-xs text-muted-foreground space-y-1">
                                   {member.emailAddress && (
                                     <div className="truncate">{member.emailAddress}</div>
                                   )}
@@ -246,7 +243,7 @@ const BarberManagement = () => {
                               </div>
                               
                               <div className="col-span-2">
-                                <label className="text-xs font-medium mb-1 block">
+                                <label className="text-xs font-medium mb-2 block">
                                   Employment Type *
                                 </label>
                                 <Select
@@ -254,7 +251,7 @@ const BarberManagement = () => {
                                   onChange={(e) =>
                                     setFormData({ ...formData, employmentType: e.target.value })
                                   }
-                                  className="h-8"
+                                  className="h-9"
                                 >
                                   <option value="CHAIR_RENTAL">Chair Rental</option>
                                   <option value="EMPLOYEE">Employee</option>
@@ -264,7 +261,7 @@ const BarberManagement = () => {
                               <div className="col-span-2">
                                 {formData.employmentType === 'EMPLOYEE' && (
                                   <div>
-                                    <label className="text-xs font-medium mb-1 block">
+                                    <label className="text-xs font-medium mb-2 block">
                                       Monthly Rate ($)
                                     </label>
                                     <Input
@@ -275,14 +272,14 @@ const BarberManagement = () => {
                                       onChange={(e) =>
                                         setFormData({ ...formData, monthlyRate: e.target.value })
                                       }
-                                      className="h-8"
+                                      className="h-9"
                                     />
                                   </div>
                                 )}
                                 
                                 {formData.employmentType === 'CHAIR_RENTAL' && (
                                   <div>
-                                    <label className="text-xs font-medium mb-1 block">
+                                    <label className="text-xs font-medium mb-2 block">
                                       Chair Rental ($)
                                     </label>
                                     <Input
@@ -293,18 +290,22 @@ const BarberManagement = () => {
                                       onChange={(e) =>
                                         setFormData({ ...formData, chairRentalRate: e.target.value })
                                       }
-                                      className="h-8"
+                                      className="h-9"
                                     />
                                   </div>
+                                )}
+                                
+                                {!formData.employmentType && (
+                                  <div className="h-9"></div>
                                 )}
                               </div>
                               
                               <div className="col-span-2">
-                                <div className="flex gap-1">
+                                <div className="flex gap-2">
                                   <Button
                                     size="sm"
                                     onClick={() => handleSave(member.squareId)}
-                                    className="h-8 px-3"
+                                    className="h-9 px-4 flex-1"
                                   >
                                     <Save className="h-3 w-3 mr-1" />
                                     Save
@@ -313,7 +314,7 @@ const BarberManagement = () => {
                                     size="sm"
                                     variant="outline"
                                     onClick={handleCancel}
-                                    className="h-8 px-3"
+                                    className="h-9 w-9 p-0"
                                   >
                                     <X className="h-3 w-3" />
                                   </Button>
@@ -321,10 +322,10 @@ const BarberManagement = () => {
                               </div>
                             </div>
                             
-                            <div className="grid grid-cols-12 gap-4 mt-3">
+                            <div className="grid grid-cols-12 gap-4 mt-4">
                               <div className="col-span-1"></div>
                               <div className="col-span-11">
-                                <label className="text-xs font-medium mb-1 block">
+                                <label className="text-xs font-medium mb-2 block">
                                   Notes
                                 </label>
                                 <Input
@@ -333,7 +334,7 @@ const BarberManagement = () => {
                                   onChange={(e) =>
                                     setFormData({ ...formData, notes: e.target.value })
                                   }
-                                  className="h-8"
+                                  className="h-9"
                                 />
                               </div>
                             </div>
