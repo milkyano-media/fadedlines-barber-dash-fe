@@ -4,32 +4,17 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import {
   getInfluenceColor,
   getInfluenceLabel,
-  getEventBadgeColor,
-  getConversionSource,
-  getSourceTypeLabel,
   getSquareBookingUrl,
   extractCampaignName,
   SOURCE_TYPES
 } from '../constants/conversionConstants';
-import { Globe, Database, ExternalLink, Copy, Check, ClipboardCopy } from 'lucide-react';
+import { ExternalLink, Copy, Check } from 'lucide-react';
 import dayjs from 'dayjs';
 import { Tooltip } from 'react-tooltip';
 import 'react-tooltip/dist/react-tooltip.css';
 import Toast from '@/components/common/Toast';
 
-// Client-side source filtering function
-const filterBySource = (conversions, sourceFilter) => {
-  if (!sourceFilter || sourceFilter === 'all') return conversions;
-  
-  return conversions.filter(conversion => {
-    const source = conversion.source || getConversionSource(conversion);
-    return source === sourceFilter;
-  });
-};
-
-const ConversionsList = ({ conversions, sourceFilter }) => {
-  // Apply client-side filtering
-  const filteredConversions = filterBySource(conversions, sourceFilter);
+const ConversionsList = ({ conversions }) => {
   const [expandedRows, setExpandedRows] = useState({});
   const [copiedId, setCopiedId] = useState(null);
   const [showToast, setShowToast] = useState(false);
@@ -179,7 +164,14 @@ const ConversionsList = ({ conversions, sourceFilter }) => {
                           </div>
                         </td>
                         <td className='p-4 align-middle'>
-                          {conversion.customerName}
+                          <div className='flex items-center gap-2'>
+                            <span>{conversion.customerName}</span>
+                            {conversion.isNewCustomer && (
+                              <span className='px-2 py-0.5 text-xs rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'>
+                                New
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className='p-4 align-middle'>
                           {conversion.teamMemberName ? (
@@ -289,6 +281,14 @@ const ConversionsList = ({ conversions, sourceFilter }) => {
                                   {conversion.conversionSequenceId}
                                 </span>
                               </p>
+                              {conversion.isNewCustomer !== null && (
+                                <p className='text-xs mt-1'>
+                                  Customer Status:{' '}
+                                  <span className={`font-medium ${conversion.isNewCustomer ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'}`}>
+                                    {conversion.isNewCustomer ? 'New Customer' : 'Returning Customer'}
+                                  </span>
+                                </p>
+                              )}
 
                               {/* Score calculation details */}
                               <div className='text-xs font-medium mt-2 space-y-1'>

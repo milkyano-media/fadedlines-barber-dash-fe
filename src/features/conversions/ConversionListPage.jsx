@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { Search, RefreshCw } from 'lucide-react';
 import ConversionsList from './components/ConversionsList';
-import { DATE_RANGES, INFLUENCE_FILTERS, SOURCE_TYPES } from './constants/conversionConstants';
+import { DATE_RANGES, INFLUENCE_FILTERS, SOURCE_TYPES, CUSTOMER_TYPE_FILTERS } from './constants/conversionConstants';
 import { useConversionsList } from './hooks/useConversionsList';
 import { useDebounce } from '@/hooks/useDebounce';
 import dayjs from 'dayjs';
@@ -21,6 +21,7 @@ const ConversionListPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [influenceFilter, setInfluenceFilter] = useState(INFLUENCE_FILTERS.ALL);
   const [sourceFilter, setSourceFilter] = useState(SOURCE_TYPES.WEBSITE); // 'all', 'website', or 'non-web'
+  const [customerTypeFilter, setCustomerTypeFilter] = useState(CUSTOMER_TYPE_FILTERS.ALL); // 'all', 'true' (new), or 'false' (regular)
   const [dateRange, setDateRange] = useState(DATE_RANGES.LAST_30_DAYS);
   const [sortOrder, setSortOrder] = useState('bookingDate_desc'); // Default to newest bookings first
   
@@ -79,6 +80,7 @@ const ConversionListPage = () => {
       search: deferredSearchTerm || undefined,
       influenceLevel: influenceFilter !== INFLUENCE_FILTERS.ALL ? influenceFilter : undefined,
       source: sourceFilter !== 'all' ? sourceFilter : undefined,
+      isNewCustomer: customerTypeFilter !== CUSTOMER_TYPE_FILTERS.ALL ? customerTypeFilter : undefined,
       startDate,
       endDate,
       sort: sortOrder
@@ -96,7 +98,8 @@ const ConversionListPage = () => {
         }
       })
       .catch(error => console.error('Error fetching conversions:', error));
-  }, [currentPage, deferredSearchTerm, influenceFilter, sourceFilter, dateRange, sortOrder]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, deferredSearchTerm, influenceFilter, sourceFilter, customerTypeFilter, dateRange, sortOrder]);
 
   // Handle refresh
   const handleRefresh = async () => {
@@ -116,6 +119,7 @@ const ConversionListPage = () => {
         search: deferredSearchTerm || undefined,
         influenceLevel: influenceFilter !== INFLUENCE_FILTERS.ALL ? influenceFilter : undefined,
         source: sourceFilter !== 'all' ? sourceFilter : undefined,
+        isNewCustomer: customerTypeFilter !== CUSTOMER_TYPE_FILTERS.ALL ? customerTypeFilter : undefined,
         startDate,
         endDate,
         sort: sortOrder
@@ -132,7 +136,7 @@ const ConversionListPage = () => {
   // Reset to page 1 when filters change
   useEffect(() => {
     if (currentPage !== 1) setCurrentPage(1);
-  }, [influenceFilter, sourceFilter, dateRange, deferredSearchTerm, sortOrder]);
+  }, [influenceFilter, sourceFilter, customerTypeFilter, dateRange, deferredSearchTerm, sortOrder]);
 
   return (
     <div className="space-y-6">
@@ -180,6 +184,16 @@ const ConversionListPage = () => {
           <option value={SOURCE_TYPES.WEBSITE}>Website</option>
           <option value={SOURCE_TYPES.NON_WEB}>Non-web</option>
           <option value="all">All Sources</option>
+        </Select>
+        
+        <Select
+          value={customerTypeFilter}
+          onChange={(e) => setCustomerTypeFilter(e.target.value)}
+          className="w-full md:w-[200px]"
+        >
+          <option value={CUSTOMER_TYPE_FILTERS.ALL}>All Customers</option>
+          <option value={CUSTOMER_TYPE_FILTERS.NEW}>New Customers Only</option>
+          <option value={CUSTOMER_TYPE_FILTERS.REGULAR}>Regular Customers Only</option>
         </Select>
         
         <Select
