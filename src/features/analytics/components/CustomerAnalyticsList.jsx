@@ -76,6 +76,9 @@ const CustomerAnalyticsList = ({ customers }) => {
                   <th className='h-10 px-4 text-left align-middle font-medium'>
                     Customer Name
                   </th>
+                  <th className='h-10 px-4 text-left align-middle font-medium'>
+                    Contact Info
+                  </th>
                   <th className='h-10 px-4 text-center align-middle font-medium'>
                     Total Conversions
                   </th>
@@ -103,6 +106,31 @@ const CustomerAnalyticsList = ({ customers }) => {
                             Customer
                           </span>
                           <span className='font-semibold'>{customer.customerName}</span>
+                        </div>
+                      </td>
+                      <td className='p-4 align-middle'>
+                        <div className='flex flex-col gap-1 text-sm'>
+                          {customer.email && (
+                            <a 
+                              href={`mailto:${customer.email}`} 
+                              className='text-primary hover:underline flex items-center gap-1'
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {customer.email}
+                            </a>
+                          )}
+                          {customer.phone && (
+                            <a 
+                              href={`tel:${customer.phone}`} 
+                              className='text-muted-foreground hover:text-primary flex items-center gap-1'
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {customer.phone}
+                            </a>
+                          )}
+                          {!customer.email && !customer.phone && (
+                            <span className='text-muted-foreground text-xs'>No contact info</span>
+                          )}
                         </div>
                       </td>
                       <td className='p-4 align-middle text-center'>
@@ -145,7 +173,7 @@ const CustomerAnalyticsList = ({ customers }) => {
                     </tr>
                     {expandedRows[customer.customerName] && (
                       <tr>
-                        <td colSpan={6} className='bg-muted/20 p-4'>
+                        <td colSpan={7} className='bg-muted/20 p-4'>
                           <div className='mb-3'>
                             <h4 className='font-medium text-sm mb-2'>
                               All Conversions ({customer.conversionDetails.length})

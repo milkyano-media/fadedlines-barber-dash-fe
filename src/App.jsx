@@ -9,7 +9,6 @@ import LoginPage from './features/auth/LoginPage';
 import RegisterPage from './features/auth/RegisterPage';
 import DashboardHomePage from './features/dashboard-home/DashboardHomePage';
 import NotFoundPage from './features/not-found/NotFoundPage';
-import CustomersPage from './features/customers/CustomersPage';
 import CampaignsPage from './features/campaigns/CampaignsPage';
 import ConversionsPage from './features/conversions/ConversionsPage';
 import EventsPage from './features/events/EventsPage';
@@ -36,10 +35,6 @@ const routesConfig = [
         element: <DashboardHomePage />
       },
       {
-        path: 'customers',
-        element: <CustomersPage />
-      },
-      {
         path: 'campaigns',
         element: <CampaignsPage />
       },
@@ -56,7 +51,7 @@ const routesConfig = [
         element: <SyncEtlPage />
       },
       {
-        path: 'customers-new',
+        path: 'customers',
         element: <CustomerAnalyticsPage />
       },
       {

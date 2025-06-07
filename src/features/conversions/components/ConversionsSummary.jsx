@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, TrendingUp, DollarSign, Users } from 'lucide-react';
 import { Select } from '@/components/ui/select';
-import { DATE_RANGES, CHART_COLORS, SOURCE_TYPES } from '../constants/conversionConstants';
+import { CHART_COLORS, SOURCE_TYPES } from '../constants/conversionConstants';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, Sector } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
 // Store previous label positions to avoid overlap
 let labelPositions = [];
 
 // Custom label renderer for pie chart with external labels
 const renderCustomizedLabel = (props) => {
-  const { cx, cy, midAngle, innerRadius, outerRadius, percent, index, value, name, fill, payload } = props;
+  const { cx, cy, midAngle, outerRadius, percent, index, fill, payload } = props;
   
   // Reset positions for first label
   if (index === 0) labelPositions = [];
@@ -139,29 +139,14 @@ const ConversionsSummary = ({
   summaryData, 
   summaryLoading, 
   summaryError, 
-  dateRange, 
-  setDateRange, 
   sourceFilter = 'all',
   setSourceFilter = () => {},
   onRetry 
 }) => {
   return (
     <div className="space-y-6">
-      {/* Filters */}
+      {/* Source Filter */}
       <div className="flex flex-wrap justify-start gap-4">
-        {/* Date Range Filter */}
-        <Select
-          value={dateRange}
-          onChange={(e) => setDateRange(e.target.value)}
-          className="w-full max-w-[200px]"
-        >
-          <option value={DATE_RANGES.LAST_7_DAYS}>Last 7 days</option>
-          <option value={DATE_RANGES.LAST_30_DAYS}>Last 30 days</option>
-          <option value={DATE_RANGES.LAST_90_DAYS}>Last 90 days</option>
-          <option value={DATE_RANGES.ALL_TIME}>All time</option>
-        </Select>
-        
-        {/* Source Filter */}
         <Select
           value={sourceFilter}
           onChange={(e) => setSourceFilter(e.target.value)}

@@ -214,17 +214,17 @@ Each feature folder should contain:
 
 ```javascript
 export const API_BASE_URL =
-  process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001';
-export const API_V1 = '/api/v1';
-export const API_V2 = '/api/v2';
+  process.env.REACT_APP_API_BASE_URL || "http://localhost:3001";
+export const API_V1 = "/api/v1";
+export const API_V2 = "/api/v2";
 
 export const API_ENDPOINTS = {
   AUTH: {
-    LOGIN: '/auth/login',
-    LOGOUT: '/auth/logout'
+    LOGIN: "/auth/login",
+    LOGOUT: "/auth/logout"
   },
   CUSTOMERS: {
-    BASE: '/customers',
+    BASE: "/customers",
     DETAIL: (id) => `/customers/${id}`
   }
 };
@@ -233,13 +233,13 @@ export const API_ENDPOINTS = {
 ### appConstants.js
 
 ```javascript
-export const APP_NAME = 'Barber Dashboard';
+export const APP_NAME = "Barber Dashboard";
 export const DEFAULT_PAGE_SIZE = 10;
 export const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 export const DATE_FORMAT = {
-  SHORT: 'MMM DD, YYYY',
-  LONG: 'MMMM DD, YYYY'
+  SHORT: "MMM DD, YYYY",
+  LONG: "MMMM DD, YYYY"
 };
 ```
 
@@ -270,9 +270,9 @@ const BaseList = ({
 // ListContainer.jsx
 const ListContainer = ({ children, title, actions }) => {
   return (
-    <div className='list-container'>
+    <div className="list-container">
       <ListHeader title={title} actions={actions} />
-      <div className='list-content'>{children}</div>
+      <div className="list-content">{children}</div>
     </div>
   );
 };
@@ -286,7 +286,7 @@ const ListContainer = ({ children, title, actions }) => {
 // App.jsx
 const routesConfig = [
   {
-    path: '/login',
+    path: "/login",
     element: (
       <PublicRoute>
         <LoginPage />
@@ -294,7 +294,7 @@ const routesConfig = [
     )
   },
   {
-    path: '/',
+    path: "/",
     element: (
       <ProtectedRoute>
         <DashboardLayout />
@@ -302,9 +302,8 @@ const routesConfig = [
     ),
     children: [
       { index: true, element: <DashboardHomePage /> },
-      { path: 'customers', element: <CustomersPage /> },
-      { path: 'campaigns', element: <CampaignsPage /> },
-      { path: 'conversions', element: <ConversionsPage /> }
+      { path: "campaigns", element: <CampaignsPage /> },
+      { path: "conversions", element: <ConversionsPage /> }
     ]
   }
 ];
