@@ -136,6 +136,24 @@ const ConversionSummaryPage = () => {
     return null;
   };
 
+  // Check if custom date range represents the last X days from today
+  const isLastXDaysFromToday = () => {
+    if (!customStartDate || !customEndDate) return false;
+    
+    const today = dayjs().startOf('day');
+    const endDate = dayjs(customEndDate).startOf('day');
+    const startDate = dayjs(customStartDate).startOf('day');
+    
+    // Check if end date is today
+    if (!endDate.isSame(today)) return false;
+    
+    // Check if the start date is exactly X days before today
+    const daysDiff = getCustomRangeDays() - 1; // -1 because we want days before today
+    const expectedStartDate = today.subtract(daysDiff, 'day');
+    
+    return startDate.isSame(expectedStartDate);
+  };
+
   // Handle custom start date change
   const handleCustomStartDateChange = (date) => {
     setCustomStartDate(date);
@@ -181,7 +199,11 @@ const ConversionSummaryPage = () => {
               className='w-full sm:w-[200px]'
             >
               {isCustomDateRange && getCustomRangeDays() && (
-                <option value="" disabled>Last {getCustomRangeDays()} days</option>
+                <option value="" disabled>
+                  {isLastXDaysFromToday() 
+                    ? `Last ${getCustomRangeDays()} days` 
+                    : `${getCustomRangeDays()} days range`}
+                </option>
               )}
               <option value={DATE_RANGES.LAST_7_DAYS}>Last 7 days</option>
               <option value={DATE_RANGES.LAST_30_DAYS}>Last 30 days</option>
