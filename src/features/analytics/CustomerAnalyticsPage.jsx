@@ -12,6 +12,7 @@ import { Select } from "@/components/ui/select";
 import { Search, RefreshCw } from "lucide-react";
 import CustomerAnalyticsList from "./components/CustomerAnalyticsList";
 import { useCustomerAnalytics } from "./hooks/useCustomerAnalytics";
+import { useCustomerAnalyticsSummary } from "./hooks/useCustomerAnalyticsSummary";
 import { useDebounce } from "@/hooks/useDebounce";
 import dayjs from "dayjs";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
@@ -67,13 +68,13 @@ const CustomerAnalyticsPage = () => {
   const { customers, meta, loading, error, fetchCustomerAnalytics } =
     useCustomerAnalytics({});
 
-  // Add state for summary stats
-  const [summaryStats, setSummaryStats] = useState({
-    totalCustomers: 0,
-    totalConversions: 0,
-    totalRevenue: 0,
-    averageOrderValue: 0
-  });
+  // Get hook for customer analytics summary
+  const {
+    summary: summaryStats,
+    loading: summaryLoading,
+    error: summaryError,
+    fetchCustomerAnalyticsSummary
+  } = useCustomerAnalyticsSummary();
 
   // Fetch customer analytics when filters or pagination change
   useEffect(() => {
@@ -89,11 +90,7 @@ const CustomerAnalyticsPage = () => {
       endDate
     };
 
-    fetchCustomerAnalytics(queryParams).then((response) => {
-      if (response && response.summary) {
-        setSummaryStats(response.summary);
-      }
-    });
+    fetchCustomerAnalytics(queryParams);
   }, [
     currentPage,
     deferredSearchTerm,
@@ -102,6 +99,19 @@ const CustomerAnalyticsPage = () => {
     dateRange,
     fetchCustomerAnalytics
   ]);
+
+  // Fetch summary separately when filters change (but not pagination)
+  useEffect(() => {
+    const { startDate, endDate } = getDateRangeParams();
+
+    const summaryParams = {
+      search: deferredSearchTerm || undefined,
+      startDate,
+      endDate
+    };
+
+    fetchCustomerAnalyticsSummary(summaryParams);
+  }, [deferredSearchTerm, dateRange, fetchCustomerAnalyticsSummary]);
 
   // Handle refresh
   const handleRefresh = async () => {
@@ -123,10 +133,15 @@ const CustomerAnalyticsPage = () => {
         endDate
       };
 
-      const response = await fetchCustomerAnalytics(refreshParams);
-      if (response && response.summary) {
-        setSummaryStats(response.summary);
-      }
+      // Refresh both analytics and summary
+      await Promise.all([
+        fetchCustomerAnalytics(refreshParams),
+        fetchCustomerAnalyticsSummary({
+          search: deferredSearchTerm || undefined,
+          startDate,
+          endDate
+        })
+      ]);
     } catch (err) {
       console.error("Error refreshing data:", err);
     } finally {
@@ -168,7 +183,11 @@ const CustomerAnalyticsPage = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {summaryStats.totalCustomers}
+              {summaryLoading ? (
+                <span className="text-muted-foreground">...</span>
+              ) : (
+                summaryStats.totalCustomers
+              )}
             </div>
             <p className="text-xs text-muted-foreground">
               {meta
@@ -185,7 +204,11 @@ const CustomerAnalyticsPage = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {summaryStats.totalConversions}
+              {summaryLoading ? (
+                <span className="text-muted-foreground">...</span>
+              ) : (
+                summaryStats.totalConversions
+              )}
             </div>
             <p className="text-xs text-muted-foreground">All conversions</p>
           </CardContent>
@@ -196,7 +219,11 @@ const CustomerAnalyticsPage = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${summaryStats.totalRevenue.toFixed(2)}
+              {summaryLoading ? (
+                <span className="text-muted-foreground">...</span>
+              ) : (
+                `$${summaryStats.totalRevenue.toFixed(2)}`
+              )}
             </div>
             <p className="text-xs text-muted-foreground">All customers</p>
           </CardContent>
@@ -209,7 +236,11 @@ const CustomerAnalyticsPage = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${summaryStats.averageOrderValue.toFixed(2)}
+              {summaryLoading ? (
+                <span className="text-muted-foreground">...</span>
+              ) : (
+                `$${summaryStats.averageOrderValue.toFixed(2)}`
+              )}
             </div>
             <p className="text-xs text-muted-foreground">Per conversion</p>
           </CardContent>
