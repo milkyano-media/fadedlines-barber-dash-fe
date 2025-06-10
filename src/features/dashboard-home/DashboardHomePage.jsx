@@ -33,15 +33,18 @@ dayjs.extend(relativeTime);
 const DashboardHomePage = () => {
   const { user } = useAuth();
   const [dateRange, setDateRange] = useState('30d');
+  const [sourceFilter, setSourceFilter] = useState('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Calculate date range parameters
-  const getDateRangeParams = () => {
+  const getDateRangeParams = (overrides = {}) => {
     const now = dayjs();
     let startDate = null;
     let endDate = now.format('YYYY-MM-DD');
+    const currentDateRange = overrides.dateRange || dateRange;
+    const currentSourceFilter = overrides.sourceFilter !== undefined ? overrides.sourceFilter : sourceFilter;
 
-    switch (dateRange) {
+    switch (currentDateRange) {
       case '7d':
         startDate = now.subtract(7, 'day').format('YYYY-MM-DD');
         break;
@@ -55,7 +58,7 @@ const DashboardHomePage = () => {
         startDate = now.subtract(30, 'day').format('YYYY-MM-DD');
     }
 
-    return { startDate, endDate };
+    return { startDate, endDate, source: currentSourceFilter !== 'all' ? currentSourceFilter : undefined };
   };
 
   const { summary, recentActivity, topPerformers, loading, error, fetchDashboardData } = 
@@ -78,7 +81,14 @@ const DashboardHomePage = () => {
   // Handle date range change
   const handleDateRangeChange = (newRange) => {
     setDateRange(newRange);
-    const newParams = { ...getDateRangeParams() };
+    const newParams = getDateRangeParams({ dateRange: newRange });
+    fetchDashboardData(newParams);
+  };
+
+  // Handle source filter change
+  const handleSourceFilterChange = (newSource) => {
+    setSourceFilter(newSource);
+    const newParams = getDateRangeParams({ sourceFilter: newSource });
     fetchDashboardData(newParams);
   };
 
@@ -127,6 +137,15 @@ const DashboardHomePage = () => {
             <option value="7d">Last 7 days</option>
             <option value="30d">Last 30 days</option>
             <option value="90d">Last 90 days</option>
+          </Select>
+          <Select
+            value={sourceFilter}
+            onChange={(e) => handleSourceFilterChange(e.target.value)}
+            className="w-[140px]"
+          >
+            <option value="all">All Sources</option>
+            <option value="website">Website</option>
+            <option value="non-web">Non-Web</option>
           </Select>
           <Button
             variant="outline"
@@ -203,10 +222,10 @@ const DashboardHomePage = () => {
             ) : (
               <>
                 <div className='text-2xl font-bold'>
-                  {summary.conversionRate?.toFixed(1) || 0}%
+                  {summary.conversionRate === null ? 'N/A' : `${summary.conversionRate?.toFixed(1) || 0}%`}
                 </div>
                 <p className='text-xs text-muted-foreground'>
-                  Visitor to customer rate
+                  {summary.conversionRate === null ? 'Direct bookings only' : 'Visitor to customer rate'}
                 </p>
               </>
             )}
@@ -356,7 +375,7 @@ const DashboardHomePage = () => {
                   </div>
                   {topPerformers.topBarbers.length > 0 ? (
                     <div className="space-y-2">
-                      {topPerformers.topBarbers.map((barber, index) => (
+                      {topPerformers.topBarbers.map((barber) => (
                         <div key={barber.name} className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50">
                           <div className="flex items-center space-x-2">
                             <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">

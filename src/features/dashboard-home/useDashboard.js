@@ -41,7 +41,13 @@ export function useDashboard(options = {}) {
   // Fetch recent activity
   const fetchRecentActivity = async (params = {}) => {
     try {
-      const response = await dashboardService.getRecentActivity(params);
+      // Extract source from params if available
+      const { source, ...otherParams } = params;
+      const activityParams = { ...otherParams };
+      if (source) {
+        activityParams.source = source;
+      }
+      const response = await dashboardService.getRecentActivity(activityParams);
       if (response.status === 'OK' && response.data) {
         setRecentActivity(response.data);
       }
@@ -72,7 +78,7 @@ export function useDashboard(options = {}) {
     try {
       await Promise.all([
         fetchSummary(params),
-        fetchRecentActivity({ limit: 10 }),
+        fetchRecentActivity({ limit: 10, ...params }),
         fetchTopPerformers({ limit: 5, ...params })
       ]);
     } catch (err) {
