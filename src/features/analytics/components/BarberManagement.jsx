@@ -72,7 +72,7 @@ const BarberManagement = () => {
   const handleSave = async (memberId) => {
     try {
       const dataToSave = {
-        notes: formData.notes
+        notes: formData.notes || ''
       };
 
       // Only include employment type if selected
@@ -80,15 +80,22 @@ const BarberManagement = () => {
         dataToSave.employmentType = formData.employmentType;
       }
 
-      // Only include rates if they have values
-      if (formData.monthlyRate) {
-        dataToSave.monthlyRate = parseFloat(formData.monthlyRate);
-      }
-      if (formData.chairRentalRate) {
-        dataToSave.chairRentalRate = parseFloat(formData.chairRentalRate);
+      // Include rates even if they are 0 or empty (will be saved as 0)
+      if (formData.employmentType === 'EMPLOYEE') {
+        dataToSave.monthlyRate = formData.monthlyRate ? parseFloat(formData.monthlyRate) : 0;
+        // Clear chair rental rate for employees
+        dataToSave.chairRentalRate = null;
+      } else if (formData.employmentType === 'CHAIR_RENTAL') {
+        dataToSave.chairRentalRate = formData.chairRentalRate ? parseFloat(formData.chairRentalRate) : 0;
+        // Clear monthly rate for chair rental
+        dataToSave.monthlyRate = null;
       }
 
       await updateTeamMemberDetail(memberId, dataToSave);
+      
+      // Refetch to get the latest data
+      await fetchTeamMembers();
+      
       setEditingMember(null);
       setFormData({
         employmentType: '',
@@ -291,6 +298,7 @@ const BarberManagement = () => {
                                         setFormData({ ...formData, monthlyRate: e.target.value })
                                       }
                                       className="h-9"
+                                      min="0"
                                     />
                                   </div>
                                 )}
@@ -309,6 +317,7 @@ const BarberManagement = () => {
                                         setFormData({ ...formData, chairRentalRate: e.target.value })
                                       }
                                       className="h-9"
+                                      min="0"
                                     />
                                   </div>
                                 )}
@@ -395,13 +404,16 @@ const BarberManagement = () => {
                               </div>
                               
                               <div className="col-span-2 text-sm">
-                                {member.details?.monthlyRate && (
+                                {member.details?.employmentType === 'EMPLOYEE' && member.details?.monthlyRate !== null && member.details?.monthlyRate !== undefined && (
                                   <div>${member.details.monthlyRate}/month</div>
                                 )}
-                                {member.details?.chairRentalRate && (
+                                {member.details?.employmentType === 'CHAIR_RENTAL' && member.details?.chairRentalRate !== null && member.details?.chairRentalRate !== undefined && (
                                   <div>${member.details.chairRentalRate}/rental</div>
                                 )}
-                                {!member.details?.monthlyRate && !member.details?.chairRentalRate && (
+                                {(!member.details || 
+                                  (member.details.employmentType === 'EMPLOYEE' && (member.details.monthlyRate === null || member.details.monthlyRate === undefined)) ||
+                                  (member.details.employmentType === 'CHAIR_RENTAL' && (member.details.chairRentalRate === null || member.details.chairRentalRate === undefined)) ||
+                                  (!member.details.employmentType)) && (
                                   <span className="text-xs text-muted-foreground">Not set</span>
                                 )}
                               </div>

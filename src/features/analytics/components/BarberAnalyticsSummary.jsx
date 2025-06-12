@@ -24,7 +24,7 @@ const BarberAnalyticsSummary = () => {
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState("totalConversions");
+  const [sortBy, setSortBy] = useState("default");
   const [sortDir, setSortDir] = useState("desc");
   const [dateRange, setDateRange] = useState("30d");
   const [employmentType, setEmploymentType] = useState("all");
@@ -247,6 +247,12 @@ const BarberAnalyticsSummary = () => {
             }}
             className="w-full md:w-[280px]"
           >
+            <option value="default_desc">
+              Default (Employment → Conversions → Order)
+            </option>
+            <option value="displayOrder_asc">
+              Sort by Display Order
+            </option>
             <option value="totalConversions_desc">
               Sort by Conversions (High to Low)
             </option>

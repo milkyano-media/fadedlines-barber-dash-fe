@@ -9,7 +9,7 @@ export const barberAnalyticsService = {
    * @param {Object} params - Query parameters
    * @param {number} [params.page] - Page number
    * @param {number} [params.size] - Page size
-   * @param {string} [params.sortBy] - Sort field (totalConversions, totalRevenue, barberName, lastBookingDate, employmentType)
+   * @param {string} [params.sortBy] - Sort field (default, displayOrder, totalConversions, totalRevenue, barberName, lastBookingDate, employmentType)
    * @param {string} [params.sortDir] - Sort direction (asc, desc)
    * @param {string} [params.startDate] - Start date filter
    * @param {string} [params.endDate] - End date filter
