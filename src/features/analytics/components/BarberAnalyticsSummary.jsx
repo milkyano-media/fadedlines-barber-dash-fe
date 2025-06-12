@@ -27,6 +27,7 @@ const BarberAnalyticsSummary = () => {
   const [sortBy, setSortBy] = useState("totalConversions");
   const [sortDir, setSortDir] = useState("desc");
   const [dateRange, setDateRange] = useState("30d");
+  const [employmentType, setEmploymentType] = useState("all");
 
   // State for manual refresh status
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -86,7 +87,8 @@ const BarberAnalyticsSummary = () => {
       sortBy,
       sortDir,
       startDate,
-      endDate
+      endDate,
+      employmentType: employmentType !== "all" ? employmentType : undefined
     };
 
     fetchBarberAnalytics(queryParams).then((response) => {
@@ -100,6 +102,7 @@ const BarberAnalyticsSummary = () => {
     sortBy,
     sortDir,
     dateRange,
+    employmentType,
     fetchBarberAnalytics
   ]);
 
@@ -120,7 +123,8 @@ const BarberAnalyticsSummary = () => {
         sortBy,
         sortDir,
         startDate,
-        endDate
+        endDate,
+        employmentType: employmentType !== "all" ? employmentType : undefined
       };
 
       const response = await fetchBarberAnalytics(refreshParams);
@@ -137,7 +141,7 @@ const BarberAnalyticsSummary = () => {
   // Reset to page 1 when filters change
   useEffect(() => {
     if (currentPage !== 1) setCurrentPage(1);
-  }, [sortBy, sortDir, dateRange, deferredSearchTerm]);
+  }, [sortBy, sortDir, dateRange, deferredSearchTerm, employmentType]);
 
   return (
     <div className="space-y-6">
@@ -257,6 +261,8 @@ const BarberAnalyticsSummary = () => {
             </option>
             <option value="barberName_asc">Sort by Name (A-Z)</option>
             <option value="barberName_desc">Sort by Name (Z-A)</option>
+            <option value="employmentType_asc">Sort by Employment Type (A-Z)</option>
+            <option value="employmentType_desc">Sort by Employment Type (Z-A)</option>
             <option value="lastBookingDate_desc">
               Sort by Last Booking (Recent)
             </option>
@@ -274,6 +280,16 @@ const BarberAnalyticsSummary = () => {
             <option value="30d">Last 30 days</option>
             <option value="90d">Last 90 days</option>
             <option value="all">All time</option>
+          </Select>
+
+          <Select
+            value={employmentType}
+            onChange={(e) => setEmploymentType(e.target.value)}
+            className="w-full md:w-[180px]"
+          >
+            <option value="all">All Employment Types</option>
+            <option value="EMPLOYEE">Employees</option>
+            <option value="CHAIR_RENTAL">Chair Rental</option>
           </Select>
         </div>
       </div>

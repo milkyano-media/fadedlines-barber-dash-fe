@@ -9,11 +9,12 @@ export const barberAnalyticsService = {
    * @param {Object} params - Query parameters
    * @param {number} [params.page] - Page number
    * @param {number} [params.size] - Page size
-   * @param {string} [params.sortBy] - Sort field (totalConversions, totalRevenue, barberName, lastBookingDate)
+   * @param {string} [params.sortBy] - Sort field (totalConversions, totalRevenue, barberName, lastBookingDate, employmentType)
    * @param {string} [params.sortDir] - Sort direction (asc, desc)
    * @param {string} [params.startDate] - Start date filter
    * @param {string} [params.endDate] - End date filter
    * @param {string} [params.search] - Search by barber name
+   * @param {string} [params.employmentType] - Filter by employment type (EMPLOYEE, CHAIR_RENTAL)
    * @returns {Promise<Object>} Response with barber analytics and metadata
    */
   async getBarberAnalytics(params = {}) {

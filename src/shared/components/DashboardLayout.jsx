@@ -11,7 +11,7 @@ import {
   LogOut,
   Moon,
   Sun,
-  TrendingUp,
+  TrendingUp
 } from "lucide-react";
 import { cn } from "@/lib/twUtils";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,7 @@ const menuItems = [
   { path: "/campaigns", label: "Campaigns", icon: BarChart3 },
   { path: "/conversions", label: "Conversions", icon: LineChart },
   { path: "/events", label: "Events", icon: ActivitySquare },
-  { path: "/sync-etl", label: "Sync & ETL", icon: Database },
+  { path: "/sync-etl", label: "Sync & ETL", icon: Database }
 ];
 
 const DashboardLayout = () => {
@@ -40,14 +40,26 @@ const DashboardLayout = () => {
           {/* User info and theme toggle at top */}
           <div className="p-4 border-b">
             <div className="flex items-center justify-between mb-2">
-              <div className="px-2">
-                <img src="/logo.svg" alt="Fadedlines Logo" />
+              <div
+                className="flex-1"
+                style={{
+                  marginLeft: -6,
+                  backgroundColor: "#000000",
+                  borderRadius: 10,
+                  padding: 3
+                }}
+              >
+                <img
+                  src="/logo.svg"
+                  alt="Fadedlines Logo"
+                  className="h-12 w-auto"
+                />
               </div>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-                className="h-8 w-8"
+                className="h-10 w-10 flex-shrink-0"
               >
                 <Sun className="h-[1rem] w-[1rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                 <Moon className="absolute h-[1rem] w-[1rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -70,7 +82,7 @@ const DashboardLayout = () => {
                       "flex items-center px-3 py-2 text-sm font-medium rounded-md group",
                       location.pathname === item.path
                         ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-muted",
+                        : "text-muted-foreground hover:bg-muted"
                     )}
                   >
                     <Icon className="mr-3 h-5 w-5" />

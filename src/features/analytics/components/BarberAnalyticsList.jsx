@@ -77,6 +77,9 @@ const BarberAnalyticsList = ({ barbers }) => {
                     Barber Name
                   </th>
                   <th className='h-10 px-4 text-center align-middle font-medium'>
+                    Employment Type
+                  </th>
+                  <th className='h-10 px-4 text-center align-middle font-medium'>
                     Total Conversions
                   </th>
                   <th className='h-10 px-4 text-center align-middle font-medium'>
@@ -104,6 +107,19 @@ const BarberAnalyticsList = ({ barbers }) => {
                           </span>
                           <span className='font-semibold'>{barber.barberName}</span>
                         </div>
+                      </td>
+                      <td className='p-4 align-middle text-center'>
+                        {barber.employmentType ? (
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            barber.employmentType === 'EMPLOYEE' 
+                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' 
+                              : 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400'
+                          }`}>
+                            {barber.employmentType === 'EMPLOYEE' ? 'Employee' : 'Chair Rental'}
+                          </span>
+                        ) : (
+                          <span className='text-xs text-muted-foreground'>Not set</span>
+                        )}
                       </td>
                       <td className='p-4 align-middle text-center'>
                         <span className='font-bold text-lg'>{barber.totalConversions}</span>
@@ -145,7 +161,7 @@ const BarberAnalyticsList = ({ barbers }) => {
                     </tr>
                     {expandedRows[barber.barberName] && (
                       <tr>
-                        <td colSpan={6} className='bg-muted/20 p-4'>
+                        <td colSpan={7} className='bg-muted/20 p-4'>
                           <div className='mb-3'>
                             <h4 className='font-medium text-sm mb-2'>
                               All Conversions ({barber.conversionDetails.length})
