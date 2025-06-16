@@ -73,7 +73,8 @@ const BarberAnalyticsSummary = () => {
     totalBarbers: 0,
     totalConversions: 0,
     totalRevenue: 0,
-    averageOrderValue: 0
+    averageOrderValue: 0,
+    totalRepeatOrders: 0
   });
 
   // Fetch barber analytics when filters or pagination change
@@ -168,7 +169,7 @@ const BarberAnalyticsSummary = () => {
       </div>
 
       {/* Summary Statistics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
@@ -221,6 +222,19 @@ const BarberAnalyticsSummary = () => {
               ${summaryStats.averageOrderValue.toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground">Per conversion</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Repeat Orders
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {summaryStats.totalRepeatOrders || 0}
+            </div>
+            <p className="text-xs text-muted-foreground">Within 3 months</p>
           </CardContent>
         </Card>
       </div>

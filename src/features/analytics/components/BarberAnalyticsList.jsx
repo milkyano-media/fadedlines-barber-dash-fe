@@ -89,6 +89,9 @@ const BarberAnalyticsList = ({ barbers }) => {
                     Avg. Order Value
                   </th>
                   <th className='h-10 px-4 text-center align-middle font-medium'>
+                    Repeat Orders
+                  </th>
+                  <th className='h-10 px-4 text-center align-middle font-medium'>
                     Last Booking
                   </th>
                   <th className='h-10 px-4 text-center align-middle font-medium w-24'>
@@ -131,6 +134,9 @@ const BarberAnalyticsList = ({ barbers }) => {
                         <span className='font-medium'>{formatCurrency(barber.averageOrderValue)}</span>
                       </td>
                       <td className='p-4 align-middle text-center'>
+                        <span className='font-bold text-lg'>{barber.repeatOrders || 0}</span>
+                      </td>
+                      <td className='p-4 align-middle text-center'>
                         <div className='flex flex-col'>
                           <span className='text-sm font-medium'>
                             {dayjs(barber.lastBookingDate).format('MMM DD, YYYY')}
@@ -161,7 +167,7 @@ const BarberAnalyticsList = ({ barbers }) => {
                     </tr>
                     {expandedRows[barber.barberName] && (
                       <tr>
-                        <td colSpan={7} className='bg-muted/20 p-4'>
+                        <td colSpan={8} className='bg-muted/20 p-4'>
                           <div className='mb-3'>
                             <h4 className='font-medium text-sm mb-2'>
                               All Conversions ({barber.conversionDetails.length})
