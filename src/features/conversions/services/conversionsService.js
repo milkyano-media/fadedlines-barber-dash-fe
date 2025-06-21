@@ -105,5 +105,34 @@ export const conversionsService = {
         message: error.message || 'Failed to fetch summary data'
       };
     }
+  },
+
+  /**
+   * Get comparison data between two date ranges
+   * @param {Object} currentPeriod - Current period date range
+   * @param {string} currentPeriod.startDate - Start date of current period
+   * @param {string} currentPeriod.endDate - End date of current period
+   * @param {Object} comparisonPeriod - Comparison period date range
+   * @param {string} comparisonPeriod.startDate - Start date of comparison period
+   * @param {string} comparisonPeriod.endDate - End date of comparison period
+   * @param {string} [source] - Source filter (website or non-web)
+   * @returns {Promise<{current: Object, previous: Object}>}
+   */
+  async getComparisonData(currentPeriod, comparisonPeriod, source) {
+    try {
+      // Fetch data for both periods in parallel
+      const [currentData, previousData] = await Promise.all([
+        this.getConversionsSummary(currentPeriod.startDate, currentPeriod.endDate, source),
+        this.getConversionsSummary(comparisonPeriod.startDate, comparisonPeriod.endDate, source)
+      ]);
+
+      return {
+        current: currentData.data,
+        previous: previousData.data
+      };
+    } catch (error) {
+      console.error('Failed to fetch comparison data:', error);
+      throw error;
+    }
   }
 };

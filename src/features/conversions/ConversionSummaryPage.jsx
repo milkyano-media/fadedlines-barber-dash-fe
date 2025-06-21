@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, X } from 'lucide-react';
+import { RefreshCw, X, BarChart3 } from 'lucide-react';
 import ConversionsSummary from './components/ConversionsSummary';
+import ComparisonModal from './components/ComparisonModal';
 import { DATE_RANGES, SOURCE_TYPES } from './constants/conversionConstants';
 import { useConversionsSummary } from './hooks/useConversionsSummary';
 import dayjs from 'dayjs';
@@ -23,6 +24,9 @@ const ConversionSummaryPage = () => {
 
   // State for manual refresh status
   const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  // State for comparison modal
+  const [isComparisonModalOpen, setIsComparisonModalOpen] = useState(false);
 
   // Get summary hook
   const { summaryData, summaryLoading, summaryError, fetchSummary } =
@@ -60,6 +64,9 @@ const ConversionSummaryPage = () => {
 
     return { startDate, endDate };
   }, [dateRange, isCustomDateRange, customStartDate, customEndDate]);
+  
+  // Get current period params for comparison modal
+  const currentPeriodParams = getDateRangeParams();
 
   // Fetch summary data when date range or source filter changes
   useEffect(() => {
@@ -259,20 +266,32 @@ const ConversionSummaryPage = () => {
           </div>
         </div>
 
-        {/* Refresh button */}
-        <Button
-          variant='outline'
-          onClick={handleRefresh}
-          disabled={summaryLoading || isRefreshing}
-          className='flex items-center gap-2 self-start sm:self-auto'
-        >
-          <RefreshCw
-            className={`h-4 w-4 ${
-              summaryLoading || isRefreshing ? 'animate-spin' : ''
-            }`}
-          />
-          Refresh Data
-        </Button>
+        {/* Action buttons */}
+        <div className='flex gap-2'>
+          <Button
+            variant='outline'
+            onClick={() => setIsComparisonModalOpen(true)}
+            disabled={summaryLoading || !summaryData || summaryData.totalConversions === 0}
+            className='flex items-center gap-2'
+          >
+            <BarChart3 className='h-4 w-4' />
+            Compare
+          </Button>
+          
+          <Button
+            variant='outline'
+            onClick={handleRefresh}
+            disabled={summaryLoading || isRefreshing}
+            className='flex items-center gap-2'
+          >
+            <RefreshCw
+              className={`h-4 w-4 ${
+                summaryLoading || isRefreshing ? 'animate-spin' : ''
+              }`}
+            />
+            Refresh Data
+          </Button>
+        </div>
       </div>
 
       {/* Summary component */}
@@ -283,6 +302,14 @@ const ConversionSummaryPage = () => {
         sourceFilter={sourceFilter}
         setSourceFilter={setSourceFilter}
         onRetry={handleRefresh}
+      />
+      
+      {/* Comparison Modal */}
+      <ComparisonModal
+        isOpen={isComparisonModalOpen}
+        onClose={() => setIsComparisonModalOpen(false)}
+        currentPeriod={currentPeriodParams}
+        sourceFilter={sourceFilter}
       />
     </div>
   );

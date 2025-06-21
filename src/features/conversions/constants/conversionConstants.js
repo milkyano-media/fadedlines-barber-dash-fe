@@ -16,6 +16,15 @@ export const DATE_RANGES = {
   ALL_TIME: 'all'
 };
 
+export const COMPARISON_RANGES = {
+  LAST_MONTH: 'last_month',
+  LAST_30_DAYS: 'last_30_days',
+  LAST_WEEK: 'last_week',
+  LAST_7_DAYS: 'last_7_days',
+  LAST_14_DAYS: 'last_14_days',
+  CUSTOM: 'custom'
+};
+
 export const INFLUENCE_FILTERS = {
   ALL: 'all',
   STRONG: 'strong', // 76-100%
@@ -185,7 +194,7 @@ export const extractCampaignName = (conversion) => {
           if (utmCampaign) {
             return cleanupCampaignName(utmCampaign);
           }
-        } catch (e) {
+        } catch {
           // If URL parsing fails, try manual extraction
           const match = event.pageUrl.match(/[?&]utm_campaign=([^&#]*)/i);
           if (match && match[1]) {

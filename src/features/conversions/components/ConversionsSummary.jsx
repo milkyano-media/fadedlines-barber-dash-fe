@@ -197,7 +197,17 @@ const ConversionsSummary = ({
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               Ad Influenced
               <Popover
-                content="Number of conversions that were influenced by ads (influence score > 0%)."
+                content={
+                  <div>
+                    <p className="font-medium mb-2">Conversions with ad influence &gt;25%</p>
+                    <p className="text-xs text-muted-foreground mb-1">Includes:</p>
+                    <ul className="text-xs text-muted-foreground space-y-0.5">
+                      <li>• Strongly influenced (≥76%)</li>
+                      <li>• Significantly influenced (≥51%)</li>
+                      <li>• Partially influenced (≥26%)</li>
+                    </ul>
+                  </div>
+                }
               >
                 <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
               </Popover>
