@@ -1,7 +1,8 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, TrendingUp, DollarSign, Users } from 'lucide-react';
+import { Calendar, TrendingUp, DollarSign, Users, HelpCircle } from 'lucide-react';
 import { Select } from '@/components/ui/select';
+import { Popover } from '@/components/ui/popover';
 import { CHART_COLORS, SOURCE_TYPES } from '../constants/conversionConstants';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
@@ -167,10 +168,17 @@ const ConversionsSummary = ({
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Conversions</CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              Total Conversions
+              <Popover
+                content="Total number of completed bookings/sales in the selected date range."
+              >
+                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
+              </Popover>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {summaryLoading ? (
@@ -186,7 +194,14 @@ const ConversionsSummary = ({
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Ad Influenced</CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              Ad Influenced
+              <Popover
+                content="Number of conversions that were influenced by ads (influence score > 0%)."
+              >
+                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
+              </Popover>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {summaryLoading ? (
@@ -211,7 +226,14 @@ const ConversionsSummary = ({
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Average Influence Score</CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              Average Influence Score
+              <Popover
+                content="Average percentage of ad influence across all conversions (0-100%)."
+              >
+                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
+              </Popover>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {summaryLoading ? (
@@ -227,7 +249,14 @@ const ConversionsSummary = ({
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              Total Revenue
+              <Popover
+                content="Total revenue from all conversions in the selected date range."
+              >
+                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
+              </Popover>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {summaryLoading ? (
@@ -238,6 +267,49 @@ const ConversionsSummary = ({
                   Math.round(summaryData.totalRevenue).toLocaleString() : '0'}
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              Ads Infl. Revenue
+              <Popover
+                content={
+                  <div>
+                    <p className="font-medium mb-2">Revenue from conversions with ad influence &gt;25%</p>
+                    <p className="text-xs text-muted-foreground mb-1">Includes:</p>
+                    <ul className="text-xs text-muted-foreground space-y-0.5">
+                      <li>• Strongly influenced (≥76%)</li>
+                      <li>• Significantly influenced (≥51%)</li>
+                      <li>• Partially influenced (≥26%)</li>
+                    </ul>
+                  </div>
+                }
+              >
+                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
+              </Popover>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {summaryLoading ? (
+              <LoadingSpinner size="small" />
+            ) : (
+              <>
+                <div className="text-2xl font-bold flex items-center gap-2">
+                  ${typeof summaryData.adsRevenue === 'number' ? 
+                    Math.round(summaryData.adsRevenue).toLocaleString() : '0'}
+                  <TrendingUp className="h-4 w-4 text-green-600" />
+                </div>
+                {summaryData.totalRevenue > 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {summaryData.adsRevenue > 0 ? 
+                      `${Math.round((summaryData.adsRevenue / summaryData.totalRevenue) * 100)}% of revenue` : 
+                      '0% of revenue'}
+                  </p>
+                )}
+              </>
             )}
           </CardContent>
         </Card>
