@@ -21,12 +21,30 @@ const ComparisonModal = ({
   const [comparisonRange, setComparisonRange] = useState(COMPARISON_RANGES.LAST_MONTH);
   const [customStartDate, setCustomStartDate] = useState(null);
   const [customEndDate, setCustomEndDate] = useState(null);
+  const [customCurrentStartDate, setCustomCurrentStartDate] = useState(null);
+  const [customCurrentEndDate, setCustomCurrentEndDate] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [comparisonData, setComparisonData] = useState(null);
   
   // Memoize current period to prevent unnecessary re-renders
   const memoizedCurrentPeriod = useMemo(() => currentPeriod, [currentPeriod]);
+
+  // Reset custom dates when switching comparison range
+  useEffect(() => {
+    if (comparisonRange !== COMPARISON_RANGES.CUSTOM) {
+      setCustomStartDate(null);
+      setCustomEndDate(null);
+      setCustomCurrentStartDate(null);
+      setCustomCurrentEndDate(null);
+    } else {
+      // Pre-populate with current period dates when switching to custom
+      if (!customCurrentStartDate && !customCurrentEndDate && memoizedCurrentPeriod) {
+        setCustomCurrentStartDate(dayjs(memoizedCurrentPeriod.startDate).toDate());
+        setCustomCurrentEndDate(dayjs(memoizedCurrentPeriod.endDate).toDate());
+      }
+    }
+  }, [comparisonRange, memoizedCurrentPeriod, customCurrentStartDate, customCurrentEndDate]);
 
   // Calculate comparison period based on selected range
   const getComparisonPeriod = () => {
@@ -89,6 +107,7 @@ const ComparisonModal = ({
       }
       
       case COMPARISON_RANGES.CUSTOM:
+        // For custom range, use the comparison period dates
         if (customStartDate && customEndDate) {
           startDate = dayjs(customStartDate).format('YYYY-MM-DD');
           endDate = dayjs(customEndDate).format('YYYY-MM-DD');
@@ -168,6 +187,16 @@ const ComparisonModal = ({
           endDate: today.format('YYYY-MM-DD')
         };
       
+      case COMPARISON_RANGES.CUSTOM:
+        // For custom range, use custom current period dates if available
+        if (customCurrentStartDate && customCurrentEndDate) {
+          return {
+            startDate: dayjs(customCurrentStartDate).format('YYYY-MM-DD'),
+            endDate: dayjs(customCurrentEndDate).format('YYYY-MM-DD')
+          };
+        }
+        return memoizedCurrentPeriod;
+      
       default:
         return memoizedCurrentPeriod;
     }
@@ -184,6 +213,22 @@ const ComparisonModal = ({
       
       if (!comparisonPeriod.startDate || !comparisonPeriod.endDate) {
         setError(new Error('Please select a valid comparison period'));
+        return;
+      }
+
+      if (!adjustedCurrentPeriod.startDate || !adjustedCurrentPeriod.endDate) {
+        setError(new Error('Please select a valid current period'));
+        return;
+      }
+
+      // Validate date ranges don't have invalid order
+      if (dayjs(adjustedCurrentPeriod.startDate).isAfter(adjustedCurrentPeriod.endDate)) {
+        setError(new Error('Current period start date must be before end date'));
+        return;
+      }
+
+      if (dayjs(comparisonPeriod.startDate).isAfter(comparisonPeriod.endDate)) {
+        setError(new Error('Comparison period start date must be before end date'));
         return;
       }
 
@@ -204,11 +249,15 @@ const ComparisonModal = ({
 
   // Fetch data when modal opens or comparison range changes
   useEffect(() => {
-    if (isOpen && (comparisonRange !== COMPARISON_RANGES.CUSTOM || (customStartDate && customEndDate))) {
-      fetchComparisonData();
+    if (isOpen) {
+      if (comparisonRange !== COMPARISON_RANGES.CUSTOM) {
+        fetchComparisonData();
+      } else if (customStartDate && customEndDate && customCurrentStartDate && customCurrentEndDate) {
+        fetchComparisonData();
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, comparisonRange, customStartDate, customEndDate, memoizedCurrentPeriod, sourceFilter]);
+  }, [isOpen, comparisonRange, customStartDate, customEndDate, customCurrentStartDate, customCurrentEndDate, memoizedCurrentPeriod, sourceFilter]);
 
   if (!isOpen) return null;
 
@@ -253,25 +302,88 @@ const ComparisonModal = ({
 
             {/* Custom Date Range */}
             {comparisonRange === COMPARISON_RANGES.CUSTOM && (
-              <div className="flex items-center gap-2">
-                <DatePicker
-                  selected={customStartDate}
-                  onChange={setCustomStartDate}
-                  placeholderText="Start date"
-                  dateFormat="MMM dd, yyyy"
-                  maxDate={customEndDate || new Date()}
-                  className="flex h-9 w-[140px] items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                />
-                <span className="text-muted-foreground">to</span>
-                <DatePicker
-                  selected={customEndDate}
-                  onChange={setCustomEndDate}
-                  placeholderText="End date"
-                  dateFormat="MMM dd, yyyy"
-                  minDate={customStartDate}
-                  maxDate={new Date()}
-                  className="flex h-9 w-[140px] items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                />
+              <div className="space-y-4">
+                {/* Current Period */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Current Period</label>
+                  <div className="flex items-center gap-2">
+                    <DatePicker
+                      selected={customCurrentStartDate}
+                      onChange={setCustomCurrentStartDate}
+                      placeholderText="Start date"
+                      dateFormat="MMM dd, yyyy"
+                      maxDate={customCurrentEndDate || new Date()}
+                      className="flex h-9 w-[140px] items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                      calendarClassName="react-datepicker-custom"
+                    />
+                    <span className="text-muted-foreground">to</span>
+                    <DatePicker
+                      selected={customCurrentEndDate}
+                      onChange={setCustomCurrentEndDate}
+                      placeholderText="End date"
+                      dateFormat="MMM dd, yyyy"
+                      minDate={customCurrentStartDate}
+                      maxDate={new Date()}
+                      className="flex h-9 w-[140px] items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                      calendarClassName="react-datepicker-custom"
+                    />
+                  </div>
+                </div>
+                
+                {/* Comparison Period */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Comparison Period</label>
+                  <div className="flex items-center gap-2">
+                    <DatePicker
+                      selected={customStartDate}
+                      onChange={setCustomStartDate}
+                      placeholderText="Start date"
+                      dateFormat="MMM dd, yyyy"
+                      maxDate={customEndDate || new Date()}
+                      className="flex h-9 w-[140px] items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                      calendarClassName="react-datepicker-custom"
+                    />
+                    <span className="text-muted-foreground">to</span>
+                    <DatePicker
+                      selected={customEndDate}
+                      onChange={setCustomEndDate}
+                      placeholderText="End date"
+                      dateFormat="MMM dd, yyyy"
+                      minDate={customStartDate}
+                      maxDate={new Date()}
+                      className="flex h-9 w-[140px] items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                      calendarClassName="react-datepicker-custom"
+                    />
+                  </div>
+                </div>
+
+                {/* Date overlap warning */}
+                {customCurrentStartDate && customCurrentEndDate && customStartDate && customEndDate && (() => {
+                  try {
+                    const currentStart = dayjs(customCurrentStartDate);
+                    const currentEnd = dayjs(customCurrentEndDate);
+                    const compStart = dayjs(customStartDate);
+                    const compEnd = dayjs(customEndDate);
+                    
+                    // Check if dayjs objects are valid
+                    if (!currentStart.isValid() || !currentEnd.isValid() || !compStart.isValid() || !compEnd.isValid()) {
+                      return null;
+                    }
+                    
+                    const hasOverlap = (currentStart.isSameOrBefore(compEnd, 'day') && currentEnd.isSameOrAfter(compStart, 'day'));
+                    
+                    return hasOverlap ? (
+                      <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-3">
+                        <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                          ⚠️ Warning: The selected periods overlap. This may affect comparison accuracy.
+                        </p>
+                      </div>
+                    ) : null;
+                  } catch (error) {
+                    console.error('Error checking date overlap:', error);
+                    return null;
+                  }
+                })()}
               </div>
             )}
           </div>
@@ -287,7 +399,7 @@ const ComparisonModal = ({
                  'Current period:'}
               </span> {dayjs(getAdjustedCurrentPeriod().startDate).format('MMM D, YYYY')} - {dayjs(getAdjustedCurrentPeriod().endDate).format('MMM D, YYYY')}
             </p>
-            {comparisonData && (
+            {(comparisonData || (comparisonRange === COMPARISON_RANGES.CUSTOM && customStartDate && customEndDate)) && (
               <p className="text-sm text-muted-foreground">
                 <span className="font-medium">
                   {comparisonRange === COMPARISON_RANGES.LAST_WEEK ? 'Previous week:' :
