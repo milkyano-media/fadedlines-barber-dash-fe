@@ -32,6 +32,26 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  // Helper function to validate token format
+  const isValidToken = (token) => {
+    if (!token || typeof token !== 'string') return false;
+    
+    // Check for common invalid values
+    if (token === 'undefined' || token === 'null' || token === '') return false;
+    
+    // Basic JWT structure check (header.payload.signature)
+    const parts = token.split('.');
+    return parts.length === 3 && parts.every(part => part.length > 0);
+  };
+
+  // Helper function to validate user object
+  const isValidUser = (userData) => {
+    if (!userData || typeof userData !== 'object') return false;
+    
+    // Check for required properties
+    return userData.id && userData.email && typeof userData.id !== 'undefined';
+  };
+
   // Check authentication state on mount
   useEffect(() => {
     const initializeAuth = () => {
@@ -40,11 +60,12 @@ export const AuthProvider = ({ children }) => {
       
       console.log('Initializing auth:', { token: !!token, userData: !!userData });
       
-      if (token && userData) {
+      if (isValidToken(token) && isValidUser(userData)) {
         setUser(userData);
       } else {
         // Clear any invalid data
         authService.logout();
+        setUser(null);
       }
       
       setLoading(false);
@@ -59,7 +80,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    isAuthenticated: !!user && !!authService.getToken(),
+    isAuthenticated: isValidUser(user) && isValidToken(authService.getToken()),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
