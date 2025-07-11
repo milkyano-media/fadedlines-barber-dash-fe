@@ -69,8 +69,10 @@ const CustomerAnalyticsList = ({ customers }) => {
     <>
       <Card>
         <CardContent className='p-0'>
-          <div className='rounded-md overflow-hidden'>
-            <table className='w-full caption-bottom text-sm'>
+          <div className='overflow-x-auto'>
+            <div className='inline-block min-w-full align-middle'>
+              <div className='overflow-hidden rounded-md'>
+                <table className='w-full min-w-[768px] caption-bottom text-sm'>
               <thead className='[&_tr]:border-b'>
                 <tr className='border-b transition-colors hover:bg-muted/50'>
                   <th className='h-10 px-4 text-left align-middle font-medium'>
@@ -258,6 +260,8 @@ const CustomerAnalyticsList = ({ customers }) => {
                 ))}
               </tbody>
             </table>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
