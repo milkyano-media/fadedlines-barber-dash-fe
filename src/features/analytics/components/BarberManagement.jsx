@@ -211,263 +211,271 @@ const BarberManagement = () => {
         </Button>
       </div>
 
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="border rounded-lg">
-          {/* Table Header */}
-          <div className="grid grid-cols-12 gap-4 p-4 bg-muted/50 border-b font-medium text-sm">
-            <div className="col-span-1 flex items-center">
-              <GripVertical className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div className="col-span-3">Name</div>
-            <div className="col-span-2">Contact</div>
-            <div className="col-span-2">Employment</div>
-            <div className="col-span-2">Rate</div>
-            <div className="col-span-2">Actions</div>
-          </div>
-          
-          <Droppable droppableId="team-members" direction="vertical">
-            {(provided) => (
-              <div
-                {...provided.droppableProps}
-                ref={provided.innerRef}
-              >
-                {orderedTeamMembers.map((member, index) => (
-                  <Draggable key={member.squareId} draggableId={member.squareId} index={index}>
-                    {(provided, snapshot) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        className={`border-b transition-all ${
-                          snapshot.isDragging ? 'shadow-lg bg-background z-10' : 'hover:bg-muted/25'
-                        }`}
-                      >
-                        {editingMember === member.squareId ? (
-                          /* Editing Row */
-                          <div className="p-4 bg-muted/20">
-                            <div className="grid grid-cols-12 gap-4 items-end">
-                              <div className="col-span-1 flex items-center pb-2">
-                                <div
-                                  {...provided.dragHandleProps}
-                                  className="cursor-grab active:cursor-grabbing"
+      <Card>
+        <CardContent className='p-0'>
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <div className='overflow-x-auto'>
+              <div className='inline-block min-w-full align-middle'>
+                <div className='overflow-hidden rounded-md'>
+                  <table className='w-full min-w-[768px] caption-bottom text-sm'>
+                    <thead className='[&_tr]:border-b'>
+                      <tr className='border-b transition-colors bg-muted/50'>
+                        <th className='h-10 w-12 px-4 text-center align-middle font-medium'>
+                          <GripVertical className="h-4 w-4 text-muted-foreground mx-auto" />
+                        </th>
+                        <th className='h-10 px-4 text-left align-middle font-medium'>Name</th>
+                        <th className='h-10 px-4 text-left align-middle font-medium'>Contact</th>
+                        <th className='h-10 px-4 text-left align-middle font-medium'>Employment</th>
+                        <th className='h-10 px-4 text-left align-middle font-medium'>Rate</th>
+                        <th className='h-10 px-4 text-center align-middle font-medium'>Actions</th>
+                      </tr>
+                    </thead>
+                    <Droppable droppableId="team-members" direction="vertical">
+                      {(provided) => (
+                        <tbody
+                          {...provided.droppableProps}
+                          ref={provided.innerRef}
+                          className='[&_tr:last-child]:border-0'
+                        >
+                        {orderedTeamMembers.map((member, index) => (
+                          <Draggable key={member.squareId} draggableId={member.squareId} index={index}>
+                            {(provided, snapshot) => (
+                              <>
+                                <tr
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  className={`border-b transition-colors ${
+                                    snapshot.isDragging ? 'shadow-lg bg-background relative z-10' : 'hover:bg-muted/50'
+                                  }`}
                                 >
-                                  <GripVertical className="h-4 w-4 text-muted-foreground" />
-                                </div>
-                              </div>
-                              
-                              <div className="col-span-3">
-                                <div className="font-medium text-sm mb-2">{member.givenName} {member.familyName}</div>
-                                <div className="text-xs text-muted-foreground space-y-1">
-                                  {member.emailAddress && (
-                                    <div className="truncate">{member.emailAddress}</div>
-                                  )}
-                                  {member.phoneNumber && (
-                                    <div>{member.phoneNumber}</div>
-                                  )}
-                                </div>
-                              </div>
-                              
-                              <div className="col-span-2">
-                                <label className="text-xs font-medium mb-2 block">
-                                  Employment Type
-                                </label>
-                                <Select
-                                  value={formData.employmentType}
-                                  onChange={(e) =>
-                                    setFormData({ ...formData, employmentType: e.target.value })
-                                  }
-                                  className="h-9"
-                                >
-                                  <option value="">Not set</option>
-                                  <option value="CHAIR_RENTAL">Chair Rental</option>
-                                  <option value="EMPLOYEE">Employee</option>
-                                </Select>
-                              </div>
-                              
-                              <div className="col-span-2">
-                                {formData.employmentType === 'EMPLOYEE' && (
-                                  <div>
-                                    <label className="text-xs font-medium mb-2 block">
-                                      Monthly Rate ($)
-                                    </label>
-                                    <Input
-                                      type="number"
-                                      step="0.01"
-                                      placeholder="0.00"
-                                      value={formData.monthlyRate}
-                                      onChange={(e) =>
-                                        setFormData({ ...formData, monthlyRate: e.target.value })
-                                      }
-                                      className="h-9"
-                                      min="0"
-                                    />
-                                  </div>
-                                )}
-                                
-                                {formData.employmentType === 'CHAIR_RENTAL' && (
-                                  <div>
-                                    <label className="text-xs font-medium mb-2 block">
-                                      Chair Rental ($)
-                                    </label>
-                                    <Input
-                                      type="number"
-                                      step="0.01"
-                                      placeholder="0.00"
-                                      value={formData.chairRentalRate}
-                                      onChange={(e) =>
-                                        setFormData({ ...formData, chairRentalRate: e.target.value })
-                                      }
-                                      className="h-9"
-                                      min="0"
-                                    />
-                                  </div>
-                                )}
-                                
-                                {!formData.employmentType && (
-                                  <div className="h-9"></div>
-                                )}
-                              </div>
-                              
-                              <div className="col-span-2">
-                                <div className="flex gap-2">
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleSave(member.squareId)}
-                                    className="h-9 px-4 flex-1"
-                                  >
-                                    <Save className="h-3 w-3 mr-1" />
-                                    Save
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={handleCancel}
-                                    className="h-9 w-9 p-0"
-                                  >
-                                    <X className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <div className="grid grid-cols-12 gap-4 mt-4">
-                              <div className="col-span-1"></div>
-                              <div className="col-span-11">
-                                <label className="text-xs font-medium mb-2 block">
-                                  Notes
-                                </label>
-                                <Input
-                                  placeholder="Additional notes..."
-                                  value={formData.notes}
-                                  onChange={(e) =>
-                                    setFormData({ ...formData, notes: e.target.value })
-                                  }
-                                  className="h-9"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          /* Display Row */
-                          <div className="p-4">
-                            <div className="grid grid-cols-12 gap-4 items-center">
-                              <div className="col-span-1 flex items-center">
-                                <div
-                                  {...provided.dragHandleProps}
-                                  className="cursor-grab active:cursor-grabbing"
-                                >
-                                  <GripVertical className="h-4 w-4 text-muted-foreground" />
-                                </div>
-                              </div>
-                              
-                              <div className="col-span-3">
-                                <div className="font-medium">{member.givenName} {member.familyName}</div>
-                                <div className="text-xs text-muted-foreground mt-1">
-                                  Order: {index + 1}
-                                </div>
-                              </div>
-                              
-                              <div className="col-span-2 text-sm">
-                                {member.emailAddress && (
-                                  <div className="truncate">{member.emailAddress}</div>
-                                )}
-                                {member.phoneNumber && (
-                                  <div className="text-xs text-muted-foreground">{member.phoneNumber}</div>
-                                )}
-                              </div>
-                              
-                              <div className="col-span-2">
-                                {member.details?.employmentType ? (
-                                  getEmploymentBadge(member.details.employmentType)
+                                  {editingMember === member.squareId ? (
+                                  /* Editing Row */
+                                  <>
+                                    <td colSpan={6} className="p-4 bg-muted/20">
+                                      <div className="space-y-4">
+                                        <div className="grid grid-cols-12 gap-4 items-end">
+                                          <div className="col-span-1 flex items-center pb-2">
+                                            <div
+                                              {...provided.dragHandleProps}
+                                              className="cursor-grab active:cursor-grabbing"
+                                            >
+                                              <GripVertical className="h-4 w-4 text-muted-foreground" />
+                                            </div>
+                                          </div>
+                                          
+                                          <div className="col-span-3">
+                                            <div className="font-medium text-sm mb-2">{member.givenName} {member.familyName}</div>
+                                            <div className="text-xs text-muted-foreground space-y-1">
+                                              {member.emailAddress && (
+                                                <div className="truncate">{member.emailAddress}</div>
+                                              )}
+                                              {member.phoneNumber && (
+                                                <div>{member.phoneNumber}</div>
+                                              )}
+                                            </div>
+                                          </div>
+                                          
+                                          <div className="col-span-2">
+                                            <label className="text-xs font-medium mb-2 block">
+                                              Employment Type
+                                            </label>
+                                            <Select
+                                              value={formData.employmentType}
+                                              onChange={(e) =>
+                                                setFormData({ ...formData, employmentType: e.target.value })
+                                              }
+                                              className="h-9"
+                                            >
+                                              <option value="">Not set</option>
+                                              <option value="CHAIR_RENTAL">Chair Rental</option>
+                                              <option value="EMPLOYEE">Employee</option>
+                                            </Select>
+                                          </div>
+                                          
+                                          <div className="col-span-2">
+                                            {formData.employmentType === 'EMPLOYEE' && (
+                                              <div>
+                                                <label className="text-xs font-medium mb-2 block">
+                                                  Monthly Rate ($)
+                                                </label>
+                                                <Input
+                                                  type="number"
+                                                  step="0.01"
+                                                  placeholder="0.00"
+                                                  value={formData.monthlyRate}
+                                                  onChange={(e) =>
+                                                    setFormData({ ...formData, monthlyRate: e.target.value })
+                                                  }
+                                                  className="h-9"
+                                                  min="0"
+                                                />
+                                              </div>
+                                            )}
+                                            
+                                            {formData.employmentType === 'CHAIR_RENTAL' && (
+                                              <div>
+                                                <label className="text-xs font-medium mb-2 block">
+                                                  Chair Rental ($)
+                                                </label>
+                                                <Input
+                                                  type="number"
+                                                  step="0.01"
+                                                  placeholder="0.00"
+                                                  value={formData.chairRentalRate}
+                                                  onChange={(e) =>
+                                                    setFormData({ ...formData, chairRentalRate: e.target.value })
+                                                  }
+                                                  className="h-9"
+                                                  min="0"
+                                                />
+                                              </div>
+                                            )}
+                                            
+                                            {!formData.employmentType && (
+                                              <div className="h-9"></div>
+                                            )}
+                                          </div>
+                                          
+                                          <div className="col-span-2">
+                                            <div className="flex gap-2">
+                                              <Button
+                                                size="sm"
+                                                onClick={() => handleSave(member.squareId)}
+                                                className="h-9 px-4 flex-1"
+                                              >
+                                                <Save className="h-3 w-3 mr-1" />
+                                                Save
+                                              </Button>
+                                              <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={handleCancel}
+                                                className="h-9 w-9 p-0"
+                                              >
+                                                <X className="h-3 w-3" />
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-12 gap-4">
+                                          <div className="col-span-1"></div>
+                                          <div className="col-span-11">
+                                            <label className="text-xs font-medium mb-2 block">
+                                              Notes
+                                            </label>
+                                            <Input
+                                              placeholder="Additional notes..."
+                                              value={formData.notes}
+                                              onChange={(e) =>
+                                                setFormData({ ...formData, notes: e.target.value })
+                                              }
+                                              className="h-9"
+                                            />
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </td>
+                                  </>
                                 ) : (
-                                  <span className="text-xs text-muted-foreground">Not set</span>
+                                  /* Display Row */
+                                  <>
+                                    <td className="p-4 text-center w-12">
+                                      <div
+                                        {...provided.dragHandleProps}
+                                        className="cursor-grab active:cursor-grabbing inline-flex"
+                                      >
+                                        <GripVertical className="h-4 w-4 text-muted-foreground" />
+                                      </div>
+                                    </td>
+                                    <td className="p-4 align-middle">
+                                      <div className="font-medium">{member.givenName} {member.familyName}</div>
+                                      <div className="text-xs text-muted-foreground mt-1">
+                                        Order: {index + 1}
+                                      </div>
+                                    </td>
+                                    <td className="p-4 align-middle">
+                                      {member.emailAddress && (
+                                        <div className="truncate text-sm">{member.emailAddress}</div>
+                                      )}
+                                      {member.phoneNumber && (
+                                        <div className="text-xs text-muted-foreground">{member.phoneNumber}</div>
+                                      )}
+                                    </td>
+                                    <td className="p-4 align-middle">
+                                      {member.details?.employmentType ? (
+                                        getEmploymentBadge(member.details.employmentType)
+                                      ) : (
+                                        <span className="text-xs text-muted-foreground">Not set</span>
+                                      )}
+                                    </td>
+                                    <td className="p-4 align-middle">
+                                      {member.details?.employmentType === 'EMPLOYEE' && member.details?.monthlyRate !== null && member.details?.monthlyRate !== undefined && (
+                                        <div className="text-sm">${member.details.monthlyRate}/month</div>
+                                      )}
+                                      {member.details?.employmentType === 'CHAIR_RENTAL' && member.details?.chairRentalRate !== null && member.details?.chairRentalRate !== undefined && (
+                                        <div className="text-sm">${member.details.chairRentalRate}/rental</div>
+                                      )}
+                                      {(!member.details || 
+                                        (member.details.employmentType === 'EMPLOYEE' && (member.details.monthlyRate === null || member.details.monthlyRate === undefined)) ||
+                                        (member.details.employmentType === 'CHAIR_RENTAL' && (member.details.chairRentalRate === null || member.details.chairRentalRate === undefined)) ||
+                                        (!member.details.employmentType)) && (
+                                        <span className="text-xs text-muted-foreground">Not set</span>
+                                      )}
+                                    </td>
+                                    <td className="p-4 align-middle text-center">
+                                      <div className="flex gap-1 justify-center">
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => handleEdit(member)}
+                                          className="h-8 px-3"
+                                        >
+                                          {member.details ? (
+                                            <><Edit2 className="h-3 w-3 mr-1" />Edit</>
+                                          ) : (
+                                            <><Plus className="h-3 w-3 mr-1" />Add</>
+                                          )}
+                                        </Button>
+                                        {member.details && (
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => handleDelete(member.squareId)}
+                                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                          >
+                                            <Trash2 className="h-3 w-3" />
+                                          </Button>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </>
                                 )}
-                              </div>
-                              
-                              <div className="col-span-2 text-sm">
-                                {member.details?.employmentType === 'EMPLOYEE' && member.details?.monthlyRate !== null && member.details?.monthlyRate !== undefined && (
-                                  <div>${member.details.monthlyRate}/month</div>
-                                )}
-                                {member.details?.employmentType === 'CHAIR_RENTAL' && member.details?.chairRentalRate !== null && member.details?.chairRentalRate !== undefined && (
-                                  <div>${member.details.chairRentalRate}/rental</div>
-                                )}
-                                {(!member.details || 
-                                  (member.details.employmentType === 'EMPLOYEE' && (member.details.monthlyRate === null || member.details.monthlyRate === undefined)) ||
-                                  (member.details.employmentType === 'CHAIR_RENTAL' && (member.details.chairRentalRate === null || member.details.chairRentalRate === undefined)) ||
-                                  (!member.details.employmentType)) && (
-                                  <span className="text-xs text-muted-foreground">Not set</span>
-                                )}
-                              </div>
-                              
-                              <div className="col-span-2">
-                                <div className="flex gap-1">
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleEdit(member)}
-                                    className="h-8 px-3"
-                                  >
-                                    {member.details ? (
-                                      <><Edit2 className="h-3 w-3 mr-1" />Edit</>
-                                    ) : (
-                                      <><Plus className="h-3 w-3 mr-1" />Add</>
-                                    )}
-                                  </Button>
-                                  {member.details && (
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => handleDelete(member.squareId)}
-                                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                                    >
-                                      <Trash2 className="h-3 w-3" />
-                                    </Button>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                            
-                            {member.details?.notes && (
-                              <div className="grid grid-cols-12 gap-4 mt-2">
-                                <div className="col-span-1"></div>
-                                <div className="col-span-11">
-                                  <div className="text-xs text-muted-foreground">
-                                    <span className="font-medium">Notes:</span> {member.details.notes}
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
+                              </tr>
+                              {!editingMember && member.details?.notes && (
+                                <tr className="border-b">
+                                  <td colSpan={6} className="px-4 pb-4 pt-0">
+                                    <div className="text-xs text-muted-foreground pl-12">
+                                      <span className="font-medium">Notes:</span> {member.details.notes}
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </>
+                          )}
+                        </Draggable>
+                      ))}
+                        {provided.placeholder}
+                      </tbody>
                     )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
+                  </Droppable>
+                </table>
               </div>
-            )}
-          </Droppable>
-        </div>
-      </DragDropContext>
+            </div>
+          </div>
+        </DragDropContext>
+      </CardContent>
+    </Card>
 
       {orderedTeamMembers.length === 0 && !loading && (
         <Card>
