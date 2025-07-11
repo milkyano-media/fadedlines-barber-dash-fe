@@ -53,9 +53,9 @@ const DashboardLayout = () => {
   }, [mobileMenuOpen]);
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden">
+    <div className="relative flex min-h-screen flex-col">
       {/* Mobile Header */}
-      <div className="lg:hidden flex items-center justify-between p-4 border-b bg-background">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-[100] w-full flex items-center justify-between p-4 bg-background backdrop-blur-md shadow-lg">
         <div className="flex items-center space-x-3">
           <Button
             variant="ghost"
@@ -88,12 +88,12 @@ const DashboardLayout = () => {
 
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 bg-black/50" onClick={() => setMobileMenuOpen(false)} />
+        <div className="lg:hidden fixed inset-0 z-[110] bg-black/50 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
       )}
 
       {/* Mobile Sidebar */}
       <div className={cn(
-        "mobile-sidebar lg:hidden fixed inset-y-0 left-0 z-50 w-64 bg-background border-r transform transition-transform duration-200 ease-in-out",
+        "mobile-sidebar lg:hidden fixed inset-y-0 left-0 z-[120] w-64 bg-background shadow-2xl transform transition-transform duration-200 ease-in-out",
         mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Mobile Sidebar Content */}
@@ -230,7 +230,7 @@ const DashboardLayout = () => {
         </div>
 
         {/* Main content area */}
-        <main className="flex-1 lg:pl-52 pt-0">
+        <main className="flex-1 lg:pl-52 pt-[73px] lg:pt-0">
           <div className="p-4 sm:p-6">
             <Outlet />
           </div>
