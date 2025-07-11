@@ -128,11 +128,11 @@ const DashboardHomePage = () => {
             Welcome back, {user?.name}
           </span>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
           <Select
             value={dateRange}
             onChange={(e) => handleDateRangeChange(e.target.value)}
-            className="w-[180px]"
+            className="w-[140px] sm:w-[180px]"
           >
             <option value="7d">Last 7 days</option>
             <option value="30d">Last 30 days</option>
@@ -141,7 +141,7 @@ const DashboardHomePage = () => {
           <Select
             value={sourceFilter}
             onChange={(e) => handleSourceFilterChange(e.target.value)}
-            className="w-[140px]"
+            className="w-[120px] sm:w-[140px]"
           >
             <option value="all">All Sources</option>
             <option value="website">Website</option>
@@ -154,7 +154,7 @@ const DashboardHomePage = () => {
             className="flex items-center gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${(loading || isRefreshing) ? 'animate-spin' : ''}`} />
-            Refresh
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
         </div>
       </div>
