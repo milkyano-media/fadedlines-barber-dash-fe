@@ -41,7 +41,7 @@ const PaginationLink = ({
     size="sm"
     disabled={disabled}
     className={cn(
-      "h-9 w-9",
+      "h-8 w-8 sm:h-9 sm:w-9 text-xs sm:text-sm",
       {
         "pointer-events-none": disabled,
         "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground border-primary": isActive
@@ -65,7 +65,7 @@ const PaginationPrevious = ({
     variant="outline"
     size="sm"
     disabled={disabled}
-    className={cn("gap-1 px-2", {
+    className={cn("gap-1 px-2 text-xs sm:text-sm", {
       "pointer-events-none opacity-50": disabled
     }, className)}
     {...props}
@@ -86,7 +86,7 @@ const PaginationNext = ({
     variant="outline"
     size="sm"
     disabled={disabled}
-    className={cn("gap-1 px-2", {
+    className={cn("gap-1 px-2 text-xs sm:text-sm", {
       "pointer-events-none opacity-50": disabled
     }, className)}
     {...props}
@@ -103,7 +103,7 @@ const PaginationEllipsis = ({
 }) => (
   <div
     aria-hidden
-    className={cn("flex h-9 w-9 items-center justify-center", className)}
+    className={cn("flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center", className)}
     {...props}
   >
     <MoreHorizontal className="h-4 w-4" />

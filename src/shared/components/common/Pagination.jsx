@@ -129,66 +129,68 @@ const PaginationComponent = ({
         </div>
       )}
 
-      <Pagination className="mx-auto sm:mx-0">
-        <PaginationContent className="items-center">
-          <PaginationItem>
-            <PaginationPrevious 
-              onClick={() => onPageChange(Math.max(1, page - 1))}
-              disabled={page === 1}
-            />
-          </PaginationItem>
+      <div className="overflow-x-auto max-w-full">
+        <Pagination className="mx-auto sm:mx-0 w-max">
+          <PaginationContent className="items-center">
+            <PaginationItem>
+              <PaginationPrevious 
+                onClick={() => onPageChange(Math.max(1, page - 1))}
+                disabled={page === 1}
+              />
+            </PaginationItem>
 
-          {itemsList.map((item, index) => {
-            if (item === 'start-ellipsis' || item === 'end-ellipsis') {
+            {itemsList.map((item, index) => {
+              if (item === 'start-ellipsis' || item === 'end-ellipsis') {
+                return (
+                  <PaginationItem key={`ellipsis-${index}`}>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                );
+              }
+
               return (
-                <PaginationItem key={`ellipsis-${index}`}>
-                  <PaginationEllipsis />
+                <PaginationItem key={item}>
+                  <PaginationLink
+                    isActive={item === page}
+                    onClick={() => onPageChange(item)}
+                  >
+                    {item}
+                  </PaginationLink>
                 </PaginationItem>
               );
-            }
+            })}
 
-            return (
-              <PaginationItem key={item}>
-                <PaginationLink
-                  isActive={item === page}
-                  onClick={() => onPageChange(item)}
-                >
-                  {item}
-                </PaginationLink>
-              </PaginationItem>
-            );
-          })}
-
-          <PaginationItem>
-            <PaginationNext 
-              onClick={() => onPageChange(Math.min(totalPages, page + 1))}
-              disabled={page === totalPages}
-            />
-          </PaginationItem>
-
-          {/* Jump to page input */}
-          <PaginationItem>
-            <form onSubmit={handleJumpToPage} className="flex items-center ml-2">
-              <input
-                type="text"
-                value={jumpToPage}
-                onChange={handleJumpInputChange}
-                placeholder="Go to"
-                className={`w-16 h-8 px-2 text-sm border rounded ${jumpInputError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} bg-transparent`}
-                aria-label="Go to page"
+            <PaginationItem>
+              <PaginationNext 
+                onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+                disabled={page === totalPages}
               />
-              <Button
-                type="submit"
-                size="sm"
-                variant="ghost"
-                className="h-8 px-2 ml-1"
-              >
-                Go
-              </Button>
-            </form>
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+            </PaginationItem>
+
+            {/* Jump to page input - hidden on mobile */}
+            <PaginationItem className="hidden sm:block">
+              <form onSubmit={handleJumpToPage} className="flex items-center">
+                <input
+                  type="text"
+                  value={jumpToPage}
+                  onChange={handleJumpInputChange}
+                  placeholder="Go"
+                  className={`w-12 h-8 px-2 text-sm border rounded ${jumpInputError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} bg-transparent`}
+                  aria-label="Go to page"
+                />
+                <Button
+                  type="submit"
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 px-1.5 ml-0.5"
+                >
+                  Go
+                </Button>
+              </form>
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
     </div>
   );
 };
