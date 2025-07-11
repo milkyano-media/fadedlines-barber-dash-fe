@@ -216,11 +216,11 @@ const EventsPage = () => {
           />
         </div>
         
-        <div className="flex flex-1 flex-col sm:flex-row gap-4">
+        <div className="flex w-full flex-col sm:flex-row gap-4">
           <Select
             value={eventType}
             onChange={(e) => setEventType(e.target.value)}
-            className="w-full md:w-[200px]"
+            className="w-full sm:w-[200px]"
           >
             <option value={EVENT_TYPES.ALL}>All Event Types</option>
             <option value={EVENT_TYPES.PAGE_VISIT}>Page Visits</option>
@@ -230,7 +230,7 @@ const EventsPage = () => {
           <Select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
-            className="w-full md:w-[200px]"
+            className="w-full sm:w-[200px]"
           >
             <option value={DATE_RANGES.LAST_7_DAYS}>Last 7 days</option>
             <option value={DATE_RANGES.LAST_30_DAYS}>Last 30 days</option>
@@ -241,7 +241,7 @@ const EventsPage = () => {
           <Select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="w-full md:w-[200px]"
+            className="w-full sm:w-[200px]"
           >
             <option value={SORT_OPTIONS.CREATED_AT_DESC}>Newest First</option>
             <option value={SORT_OPTIONS.CREATED_AT_ASC}>Oldest First</option>
