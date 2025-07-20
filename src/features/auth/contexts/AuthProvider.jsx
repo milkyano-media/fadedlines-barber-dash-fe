@@ -19,12 +19,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = (userData) => {
-    // TODO: Implement register API call
-    const newUser = { ...userData, id: Date.now() };
-    setUser(newUser);
-    localStorage.setItem("user_data", JSON.stringify(newUser));
-    return true;
+  const register = async (userData) => {
+    try {
+      setLoading(true);
+      const response = await authService.register(userData);
+      setUser(response.user);
+      return response;
+    } catch (error) {
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const logout = () => {

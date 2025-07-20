@@ -32,6 +32,31 @@ export const authService = {
   },
 
   /**
+   * Register user
+   * @param {Object} userData - Registration data
+   * @param {string} userData.name - User name
+   * @param {string} userData.email - User email
+   * @param {string} userData.password - User password
+   * @returns {Promise<Object>} Registration response
+   */
+  async register(userData) {
+    try {
+      const response = await v2Client.post('/auth/register', userData);
+      const data = response.data;
+      
+      if (data.token) {
+        localStorage.setItem(TOKEN_KEY, data.token);
+        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Registration failed:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Logout user
    */
   logout() {
