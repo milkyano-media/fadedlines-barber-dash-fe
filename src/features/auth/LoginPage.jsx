@@ -22,6 +22,7 @@ const LoginPage = () => {
   // Get the previous location or use dashboard as default
   const from = location.state?.from?.pathname || '/dashboard';
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -46,18 +47,60 @@ const LoginPage = () => {
         navigate(from, { replace: true });
       }, 1000);
     } catch (err) {
+      // Clear any existing error first
+      setError('');
+      
       let errorMessage = 'An error occurred during login';
+      
+      // Extract error message from different possible locations
       if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err.response?.statusText) {
+        errorMessage = err.response.statusText;
       } else if (err.message) {
         errorMessage = err.message;
       }
       
-      setToast({
-        message: errorMessage,
-        isVisible: true,
-        type: 'error'
-      });
+      // Show error toast using DOM manipulation (React state not working reliably)
+      const showErrorToast = (message) => {
+        // Remove any existing error toast
+        const existingToast = document.querySelector('.login-error-toast');
+        if (existingToast) {
+          existingToast.remove();
+        }
+        
+        // Create new error toast
+        const toastDiv = document.createElement('div');
+        toastDiv.className = 'login-error-toast fixed bottom-4 right-4 z-50 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-400 rounded-lg shadow-lg p-3 flex items-center justify-between min-w-[300px] max-w-[500px] animate-in fade-in slide-in-from-bottom-5 duration-300';
+        
+        toastDiv.innerHTML = `
+          <div class="flex items-center">
+            <svg class="h-4 w-4 mr-2 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="text-sm font-medium">${message}</span>
+          </div>
+          <button class="ml-3 flex-shrink-0 p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 transition-colors" onclick="this.parentElement.remove()">
+            <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        `;
+        
+        document.body.appendChild(toastDiv);
+        
+        // Auto-remove after 4 seconds
+        setTimeout(() => {
+          if (toastDiv.parentNode) {
+            toastDiv.remove();
+          }
+        }, 4000);
+      };
+      
+      showErrorToast(errorMessage);
+      
     } finally {
       setIsLoading(false);
     }
@@ -70,6 +113,7 @@ const LoginPage = () => {
   const hideToast = () => {
     setToast({ ...toast, isVisible: false });
   };
+
 
   return (
     <>
