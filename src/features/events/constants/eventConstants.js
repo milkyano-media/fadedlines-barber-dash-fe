@@ -4,7 +4,10 @@
 export const EVENT_TYPES = {
   ALL: 'all',
   PAGE_VISIT: 'page_visit',
-  CREATE_BOOKING: 'create_booking'
+  CREATE_BOOKING: 'create_booking',
+  NEED_VERIFICATION: 'need_verification',
+  REGISTRATION_COMPLETED: 'registration_completed',
+  REGISTRATION_FAILED: 'registration_failed'
 };
 
 // Date ranges for filtering
@@ -23,14 +26,17 @@ export const SORT_OPTIONS = {
 
 // Badge colors for different event types
 export const EVENT_TYPE_COLORS = {
-  page_visit: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-  create_booking: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+  page_visit: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200',
+  create_booking: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200',
+  need_verification: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200',
+  registration_completed: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200',
+  registration_failed: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200'
 };
 
 // Badge colors for different source types
 export const SOURCE_TYPE_COLORS = {
-  website: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-  'non-web': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400'
+  website: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200',
+  'non-web': 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-200'
 };
 
 // Helper function to get event type label
@@ -40,6 +46,12 @@ export const getEventTypeLabel = (eventType) => {
       return 'Page Visit';
     case 'create_booking':
       return 'Booking Created';
+    case 'need_verification':
+      return 'Need Verification';
+    case 'registration_completed':
+      return 'Registration Completed';
+    case 'registration_failed':
+      return 'Registration Failed';
     default:
       return eventType;
   }
