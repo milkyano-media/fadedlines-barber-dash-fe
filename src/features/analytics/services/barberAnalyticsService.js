@@ -35,5 +35,38 @@ export const barberAnalyticsService = {
       console.error('Failed to fetch barber analytics:', error);
       throw error;
     }
+  },
+
+  /**
+   * Get paginated conversions for a specific barber
+   * @param {string} barberName - Name of the barber
+   * @param {Object} params - Query parameters
+   * @param {number} [params.page=1] - Page number (1-based)
+   * @param {number} [params.size=10] - Page size
+   * @param {string} [params.startDate] - Start date filter
+   * @param {string} [params.endDate] - End date filter
+   * @param {string} [params.employmentType] - Filter by employment type
+   * @returns {Promise<Object>} Response with paginated conversions for the barber
+   */
+  async getBarberAllConversions(barberName, params = {}) {
+    try {
+      // Build query parameters
+      const queryParams = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          queryParams.append(key, value.toString());
+        }
+      });
+
+      // Encode barber name to handle spaces and special characters
+      const encodedBarberName = encodeURIComponent(barberName);
+      const url = `/analytics/barbers/${encodedBarberName}/conversions${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+
+      const response = await v2Client.axiosInstance.get(url);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch paginated barber conversions:', error);
+      throw error;
+    }
   }
 };

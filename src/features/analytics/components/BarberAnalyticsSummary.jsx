@@ -340,7 +340,14 @@ const BarberAnalyticsSummary = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <BarberAnalyticsList barbers={barbers} />
+            <BarberAnalyticsList 
+              barbers={barbers} 
+              filterParams={{
+                startDate: getDateRangeParams().startDate,
+                endDate: getDateRangeParams().endDate,
+                employmentType: employmentType !== "all" ? employmentType : undefined
+              }}
+            />
           </CardContent>
         </Card>
       )}

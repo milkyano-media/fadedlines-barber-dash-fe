@@ -7,15 +7,20 @@ import { Tooltip } from 'react-tooltip';
 import 'react-tooltip/dist/react-tooltip.css';
 import Toast from '@/components/common/Toast';
 import { getSquareBookingUrl } from '../../conversions/constants/conversionConstants';
+import { barberAnalyticsService } from '../services/barberAnalyticsService';
 
 // Initialize dayjs plugins
 dayjs.extend(relativeTime);
 
-const BarberAnalyticsList = ({ barbers }) => {
+const BarberAnalyticsList = ({ barbers, filterParams = {} }) => {
   const [expandedRows, setExpandedRows] = useState({});
   const [copiedId, setCopiedId] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [loadingMoreConversions, setLoadingMoreConversions] = useState({});
+  const [additionalConversions, setAdditionalConversions] = useState({});
+  const [currentPage, setCurrentPage] = useState({});
+  const [hasMoreConversions, setHasMoreConversions] = useState({});
 
   // Toggle accordion expansion for a row
   const toggleRow = (barberName) => {
@@ -39,6 +44,72 @@ const BarberAnalyticsList = ({ barbers }) => {
       .catch(err => {
         console.error('Failed to copy text: ', err);
       });
+  };
+
+  // Function to fetch next 10 conversions for a barber
+  const fetchMoreConversions = async (barberName) => {
+    setLoadingMoreConversions(prev => ({
+      ...prev,
+      [barberName]: true
+    }));
+
+    try {
+      const nextPage = (currentPage[barberName] || 1) + 1;
+      
+      // Use filter parameters to maintain consistency with current view
+      const params = {
+        ...filterParams,
+        page: nextPage,
+        size: 10
+      };
+      
+      const response = await barberAnalyticsService.getBarberAllConversions(barberName, params);
+      
+      if (response?.data) {
+        // Accumulate new conversions with existing ones
+        setAdditionalConversions(prev => ({
+          ...prev,
+          [barberName]: [...(prev[barberName] || []), ...response.data]
+        }));
+        
+        // Update current page
+        setCurrentPage(prev => ({
+          ...prev,
+          [barberName]: nextPage
+        }));
+        
+        // Update hasMore status based on API response
+        setHasMoreConversions(prev => ({
+          ...prev,
+          [barberName]: response.meta?.hasMore || false
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching more conversions:', error);
+      setToastMessage('Failed to load more conversions');
+      setShowToast(true);
+    } finally {
+      setLoadingMoreConversions(prev => ({
+        ...prev,
+        [barberName]: false
+      }));
+    }
+  };
+
+  // Function to reset to initial conversions only
+  const showFewerConversions = (barberName) => {
+    setAdditionalConversions(prev => ({
+      ...prev,
+      [barberName]: []
+    }));
+    setCurrentPage(prev => ({
+      ...prev,
+      [barberName]: 1
+    }));
+    setHasMoreConversions(prev => ({
+      ...prev,
+      [barberName]: true // Reset to true since we know there are more
+    }));
   };
 
   // Format currency
@@ -171,13 +242,23 @@ const BarberAnalyticsList = ({ barbers }) => {
                       <tr>
                         <td colSpan={8} className='bg-muted/20 p-4'>
                           <div className='mb-3'>
-                            <h4 className='font-medium text-sm mb-2'>
-                              All Conversions ({barber.conversionDetails.length})
-                            </h4>
-                            
-                            {barber.conversionDetails.length > 0 ? (
-                              <div className='space-y-2'>
-                                {barber.conversionDetails.map((conversion) => (
+                            {(() => {
+                              // Combine initial conversions with additional loaded conversions
+                              const additionalConvs = additionalConversions[barber.barberName] || [];
+                              const allConversionsForBarber = [...barber.conversionDetails, ...additionalConvs];
+                              const totalShowing = allConversionsForBarber.length;
+                              const hasAdditionalConversions = additionalConvs.length > 0;
+                              
+                              return (
+                                <>
+                                  <h4 className='font-medium text-sm mb-2'>
+                                    Conversions (showing {totalShowing}
+                                    {barber.hasMoreConversions || hasMoreConversions[barber.barberName] ? ` of ${barber.totalConversionDetails}` : ''})
+                                  </h4>
+                                  
+                                  {allConversionsForBarber.length > 0 ? (
+                                    <div className='space-y-2'>
+                                      {allConversionsForBarber.map((conversion) => (
                                   <div key={conversion.id} className='flex items-center justify-between p-3 bg-background rounded-md border'>
                                     <div className='flex-1'>
                                       <div className='flex items-center gap-4'>
@@ -241,11 +322,42 @@ const BarberAnalyticsList = ({ barbers }) => {
                                       </p>
                                     </div>
                                   </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className='text-sm text-muted-foreground'>No conversions found</p>
-                            )}
+                                  ))}
+                                      
+                                      {/* Show "Load 10 More" button */}
+                                      {(barber.hasMoreConversions || hasMoreConversions[barber.barberName]) && (
+                                        <div className='flex justify-center pt-3'>
+                                          <button
+                                            onClick={() => fetchMoreConversions(barber.barberName)}
+                                            disabled={loadingMoreConversions[barber.barberName]}
+                                            className='text-primary hover:text-primary/80 text-sm font-medium px-4 py-2 rounded-md border border-primary hover:bg-primary/5 transition-colors disabled:opacity-50'
+                                          >
+                                            {loadingMoreConversions[barber.barberName] 
+                                              ? 'Loading...' 
+                                              : `Load 10 More (${Math.max(0, barber.totalConversionDetails - totalShowing)} remaining)`
+                                            }
+                                          </button>
+                                        </div>
+                                      )}
+                                      
+                                      {/* Show "Show Less" button if we have additional conversions */}
+                                      {hasAdditionalConversions && (
+                                        <div className='flex justify-center pt-2'>
+                                          <button
+                                            onClick={() => showFewerConversions(barber.barberName)}
+                                            className='text-muted-foreground hover:text-primary text-sm font-medium px-4 py-2 rounded-md border hover:bg-muted transition-colors'
+                                          >
+                                            Show Less
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <p className='text-sm text-muted-foreground'>No conversions found</p>
+                                  )}
+                                </>
+                              );
+                            })()}
                           </div>
                         </td>
                       </tr>
