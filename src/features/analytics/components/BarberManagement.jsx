@@ -7,9 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Edit2, Save, X, Trash2, Plus, GripVertical } from 'lucide-react';
+import { Edit2, Save, X, Trash2, Plus, GripVertical, RotateCcw } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { useTeamManagement } from '../hooks/useTeamManagement';
+import { useBarberAnalytics } from '../hooks/useBarberAnalytics';
+import dayjs from 'dayjs';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 
@@ -23,7 +25,38 @@ const BarberManagement = () => {
     deleteTeamMemberDetail
   } = useTeamManagement();
 
+  // Hook for analytics data
+  const { fetchBarberAnalytics } = useBarberAnalytics();
+
   const [orderedTeamMembers, setOrderedTeamMembers] = useState([]);
+  const [isAutoSorting, setIsAutoSorting] = useState(false);
+  const [autoSortDateRange, setAutoSortDateRange] = useState('30d');
+
+  // Calculate date range parameters for auto-sort
+  const getAutoSortDateRangeParams = () => {
+    const now = dayjs();
+    let startDate = null;
+    let endDate = now.format('YYYY-MM-DD');
+
+    switch (autoSortDateRange) {
+      case '7d':
+        startDate = now.subtract(7, 'day').format('YYYY-MM-DD');
+        break;
+      case '30d':
+        startDate = now.subtract(30, 'day').format('YYYY-MM-DD');
+        break;
+      case '90d':
+        startDate = now.subtract(90, 'day').format('YYYY-MM-DD');
+        break;
+      case 'all':
+        // No start date for all time
+        break;
+      default:
+        startDate = now.subtract(30, 'day').format('YYYY-MM-DD');
+    }
+
+    return { startDate, endDate };
+  };
 
   const [editingMember, setEditingMember] = useState(null);
   const [formData, setFormData] = useState({
@@ -118,6 +151,126 @@ const BarberManagement = () => {
     }
   };
 
+  // Auto-sort handler based on Employment → Conversions → Order logic
+  // Uses last 30 days conversion data to match Analytics Summary behavior
+  const handleAutoSort = async () => {
+    if (isAutoSorting) return;
+    
+    setIsAutoSorting(true);
+    try {
+      // First, fetch analytics data to get conversion counts
+      // Use the selected date range for auto-sort
+      const { startDate, endDate } = getAutoSortDateRangeParams();
+      
+      console.log('🔄 Auto-sort: Fetching analytics data with date range:', { 
+        range: autoSortDateRange, 
+        startDate, 
+        endDate 
+      });
+      const analyticsData = await fetchBarberAnalytics({
+        sortBy: 'default',
+        sortDir: 'desc',
+        size: 100,
+        startDate,
+        endDate,
+        page: 1
+      });
+      
+      console.log('📊 Auto-sort: Received analytics data:', analyticsData);
+      
+      if (!analyticsData || !analyticsData.data) {
+        console.error('❌ Auto-sort: Analytics data is invalid:', analyticsData);
+        throw new Error('Failed to fetch analytics data for sorting');
+      }
+      
+      console.log('✅ Auto-sort: Analytics data valid, proceeding with sort...');
+
+      // Create a map of barber names to their analytics data for conversion lookup
+      const analyticsMap = new Map();
+      analyticsData.data.forEach(barber => {
+        analyticsMap.set(barber.barberName, {
+          totalConversions: barber.totalConversions || 0
+        });
+      });
+
+      // Sort team members using the same logic as analytics default sort
+      const sortedMembers = [...orderedTeamMembers].sort((a, b) => {
+        const aName = `${a.givenName} ${a.familyName}`;
+        const bName = `${b.givenName} ${b.familyName}`;
+        const aAnalytics = analyticsMap.get(aName) || { totalConversions: 0 };
+        const bAnalytics = analyticsMap.get(bName) || { totalConversions: 0 };
+
+        // First by employment type (EMPLOYEE > CHAIR_RENTAL > null)
+        const aEmployment = a.details?.employmentType;
+        const bEmployment = b.details?.employmentType;
+        
+        let comparison = 0;
+        if (!aEmployment && !bEmployment) {
+          comparison = 0;
+        } else if (!aEmployment) {
+          comparison = 1;
+        } else if (!bEmployment) {
+          comparison = -1;
+        } else if (aEmployment === 'EMPLOYEE' && bEmployment === 'CHAIR_RENTAL') {
+          comparison = -1;
+        } else if (aEmployment === 'CHAIR_RENTAL' && bEmployment === 'EMPLOYEE') {
+          comparison = 1;
+        } else {
+          comparison = 0;
+        }
+
+        // If employment types are the same, sort by total conversions (descending)
+        if (comparison === 0) {
+          comparison = bAnalytics.totalConversions - aAnalytics.totalConversions;
+        }
+
+        // If still the same, sort by current display order
+        if (comparison === 0) {
+          const aOrder = a.details?.displayOrder ?? 999;
+          const bOrder = b.details?.displayOrder ?? 999;
+          comparison = aOrder - bOrder;
+        }
+
+        return comparison;
+      });
+
+      // Update local state first for immediate feedback
+      setOrderedTeamMembers(sortedMembers);
+
+      // Update display orders in the database
+      const updatePromises = sortedMembers.map((member, index) => {
+        const newDisplayOrder = index + 1;
+        return updateTeamMemberDetail(member.squareId, { displayOrder: newDisplayOrder });
+      });
+
+      await Promise.all(updatePromises);
+      
+      // Refresh team members to get updated data
+      await fetchTeamMembers();
+      
+    } catch (err) {
+      console.error('Error auto-sorting team members:', err);
+      console.error('Error details:', err.response || err.message || err);
+      
+      // Provide specific error messages based on the error type
+      let errorMessage = 'Auto-sort failed';
+      if (err.response && err.response.status === 401) {
+        errorMessage = 'Auto-sort failed: Please refresh the page and log in again. Your session may have expired.';
+      } else if (err.message && err.message.includes('fetch analytics')) {
+        errorMessage = 'Auto-sort failed: Unable to load analytics data. Please ensure you\'re logged in and try again.';
+      } else {
+        errorMessage = `Auto-sort failed: ${err.message || 'Unknown error'}. Please try again.`;
+      }
+      
+      alert(errorMessage);
+      
+      // Revert local state on error
+      await fetchTeamMembers();
+    } finally {
+      setIsAutoSorting(false);
+    }
+  };
+
   const handleDragEnd = async (result) => {
     if (!result.destination) return;
 
@@ -203,12 +356,34 @@ const BarberManagement = () => {
         <div>
           <h2 className="text-xl font-semibold">Team Management</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Drag and drop to reorder barbers • Manage employment details
+            Drag and drop to reorder barbers • Auto-sort by employment & conversions (with date range) • Manage employment details
           </p>
         </div>
-        <Button variant="outline" onClick={fetchTeamMembers} disabled={loading}>
-          {loading ? <LoadingSpinner size="small" /> : 'Refresh'}
-        </Button>
+        <div className="flex gap-2 items-center">
+          <Button 
+            variant="outline" 
+            onClick={handleAutoSort} 
+            disabled={loading || isAutoSorting}
+            className="flex items-center gap-2"
+          >
+            <RotateCcw className={`h-4 w-4 ${isAutoSorting ? 'animate-spin' : ''}`} />
+            {isAutoSorting ? 'Auto Sorting...' : 'Auto Sort'}
+          </Button>
+          <Select
+            value={autoSortDateRange}
+            onChange={(e) => setAutoSortDateRange(e.target.value)}
+            className="w-[160px]"
+            disabled={isAutoSorting}
+          >
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+            <option value="90d">Last 90 days</option>
+            <option value="all">All time</option>
+          </Select>
+          <Button variant="outline" onClick={fetchTeamMembers} disabled={loading}>
+            {loading ? <LoadingSpinner size="small" /> : 'Refresh'}
+          </Button>
+        </div>
       </div>
 
       <Card>
