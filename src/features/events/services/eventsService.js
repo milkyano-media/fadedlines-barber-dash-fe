@@ -17,6 +17,7 @@ export const eventsService = {
    * @param {string} [params.sortDir] - Sort direction (asc or desc)
    * @param {string} [params.startDate] - Start date filter
    * @param {string} [params.endDate] - End date filter
+   * @param {boolean} [params.registrationEvents] - Filter to show only registration events
    * @returns {Promise<Object>} Response with events and metadata
    */
   async getEvents(params = {}) {

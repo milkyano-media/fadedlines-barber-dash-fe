@@ -8,7 +8,7 @@ class ApiClient {
       headers: {
         'Content-Type': 'application/json'
       },
-      timeout: 30000 // 30 seconds
+      // timeout: 90000 // 30 seconds
     });
 
     // Request interceptor

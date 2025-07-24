@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { RefreshCw, Search, Trash2 } from 'lucide-react';
 import EventList from './components/EventList';
-import { EVENT_TYPES, DATE_RANGES, SORT_OPTIONS } from './constants/eventConstants';
+import { EVENT_TYPES, DATE_RANGES, SORT_OPTIONS, REGISTRATION_EVENT_TYPES } from './constants/eventConstants';
 import { useEvents } from './hooks/useEvents';
 import { useDebounce } from '@/hooks/useDebounce';
 import dayjs from 'dayjs';
@@ -26,6 +26,7 @@ const EventsPage = () => {
   const [eventType, setEventType] = useState(EVENT_TYPES.ALL);
   const [dateRange, setDateRange] = useState(DATE_RANGES.LAST_30_DAYS);
   const [sortBy, setSortBy] = useState(SORT_OPTIONS.CREATED_AT_DESC);
+  const [showRegistrationEventsOnly, setShowRegistrationEventsOnly] = useState(false);
   
   // State for manual refresh status
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -79,6 +80,7 @@ const EventsPage = () => {
     size: 10,
     search: debouncedSearchTerm || undefined, // Universal search field
     eventName: eventType !== EVENT_TYPES.ALL ? eventType : undefined,
+    registrationEvents: showRegistrationEventsOnly || undefined,
     ...getDateRangeParams(),
     ...getSortParams()
   };
@@ -174,7 +176,7 @@ const EventsPage = () => {
     // Clear selections when search/filters change
     setSelectedEvents(new Set());
     setIsSelectAll(false);
-  }, [eventType, dateRange, sortBy, debouncedSearchTerm]);
+  }, [eventType, dateRange, sortBy, debouncedSearchTerm, showRegistrationEventsOnly]);
 
   return (
     <div className="space-y-6">
@@ -216,6 +218,20 @@ const EventsPage = () => {
           />
         </div>
         
+        {/* Registration Events Filter Checkbox */}
+        {/* <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="registration-events-filter"
+            checked={showRegistrationEventsOnly}
+            onChange={(e) => setShowRegistrationEventsOnly(e.target.checked)}
+            className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          />
+          <label htmlFor="registration-events-filter" className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+            Registration Events Only
+          </label>
+        </div> */}
+        
         <div className="flex w-full flex-col sm:flex-row gap-4">
           <Select
             value={eventType}
@@ -225,6 +241,9 @@ const EventsPage = () => {
             <option value={EVENT_TYPES.ALL}>All Event Types</option>
             <option value={EVENT_TYPES.PAGE_VISIT}>Page Visits</option>
             <option value={EVENT_TYPES.CREATE_BOOKING}>Bookings</option>
+            <option value={EVENT_TYPES.NEED_VERIFICATION}>Need Verification</option>
+            <option value={EVENT_TYPES.REGISTRATION_COMPLETED}>Registration Completed</option>
+            <option value={EVENT_TYPES.REGISTRATION_FAILED}>Registration Failed</option>
           </Select>
           
           <Select

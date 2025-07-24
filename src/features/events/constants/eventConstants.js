@@ -10,6 +10,13 @@ export const EVENT_TYPES = {
   REGISTRATION_FAILED: 'registration_failed'
 };
 
+// Registration event types (subset of EVENT_TYPES)
+export const REGISTRATION_EVENT_TYPES = [
+  EVENT_TYPES.NEED_VERIFICATION,
+  EVENT_TYPES.REGISTRATION_COMPLETED,
+  EVENT_TYPES.REGISTRATION_FAILED
+];
+
 // Date ranges for filtering
 export const DATE_RANGES = {
   LAST_7_DAYS: '7d',

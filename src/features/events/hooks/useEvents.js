@@ -68,7 +68,8 @@ export function useEvents(options = {}) {
     options.sortBy,
     options.sortDir,
     options.startDate,
-    options.endDate
+    options.endDate,
+    options.registrationEvents
   ]);
 
   return {
