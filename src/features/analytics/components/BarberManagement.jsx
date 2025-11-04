@@ -7,13 +7,35 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Edit2, Save, X, Trash2, Plus, GripVertical, RotateCcw } from 'lucide-react';
+import {
+  Edit2,
+  Save,
+  X,
+  Trash2,
+  Plus,
+  GripVertical,
+  RotateCcw,
+  UserPlus,
+  Settings,
+  Eye,
+  Image as ImageIcon,
+  Info
+} from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { useTeamManagement } from '../hooks/useTeamManagement';
 import { useBarberAnalytics } from '../hooks/useBarberAnalytics';
+import teamService from '../services/teamService';
 import dayjs from 'dayjs';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
+import Toast from '@/components/common/Toast';
+import CreateBarberModal from './CreateBarberModal';
+import ServiceManagement from './ServiceManagement';
+import DeleteConfirmationModal from './DeleteConfirmationModal';
+import ServiceAssignmentInfoModal from './ServiceAssignmentInfoModal';
+import DeletedBarberInfoModal from './DeletedBarberInfoModal';
+import EditImageModal from './EditImageModal';
+import EditTeamMemberModal from './EditTeamMemberModal';
 
 const BarberManagement = () => {
   const {
@@ -65,6 +87,39 @@ const BarberManagement = () => {
     chairRentalRate: '',
     notes: ''
   });
+
+  // New modal states
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedMemberForServices, setSelectedMemberForServices] = useState(null);
+  const [showServiceModal, setShowServiceModal] = useState(false);
+
+  // Delete confirmation modal states
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Edit image modal states
+  const [showEditImageModal, setShowEditImageModal] = useState(false);
+  const [selectedMemberForImage, setSelectedMemberForImage] = useState(null);
+
+  // Toast notification states
+  const [toast, setToast] = useState({
+    isVisible: false,
+    message: '',
+    type: 'success'
+  });
+
+  // Service assignment info modal states
+  const [showServiceAssignmentInfo, setShowServiceAssignmentInfo] = useState(false);
+  const [createdBarberInfo, setCreatedBarberInfo] = useState(null);
+
+  // Deleted barber info modal states
+  const [showDeletedBarberInfo, setShowDeletedBarberInfo] = useState(false);
+  const [deletedBarberInfo, setDeletedBarberInfo] = useState(null);
+
+  // Edit team member modal states
+  const [showEditTeamMemberModal, setShowEditTeamMemberModal] = useState(false);
+  const [selectedMemberForEdit, setSelectedMemberForEdit] = useState(null);
 
   useEffect(() => {
     fetchTeamMembers();
@@ -141,14 +196,63 @@ const BarberManagement = () => {
     }
   };
 
-  const handleDelete = async (memberId) => {
-    if (window.confirm('Are you sure you want to delete this employment detail?')) {
-      try {
-        await deleteTeamMemberDetail(memberId);
-      } catch (err) {
-        console.error('Error deleting team member detail:', err);
-      }
+  // Toast helper functions
+  const showToast = (message, type = 'success') => {
+    setToast({
+      isVisible: true,
+      message,
+      type
+    });
+  };
+
+  const hideToast = () => {
+    setToast(prev => ({ ...prev, isVisible: false }));
+  };
+
+  // Open delete confirmation modal
+  const handleDeleteTeamMember = (member) => {
+    setMemberToDelete(member);
+    setShowDeleteModal(true);
+  };
+
+  // Confirm delete action
+  const handleConfirmDelete = async () => {
+    if (!memberToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      // Delete services, category, deactivate in Square, and delete from local DB
+      const response = await teamService.deactivateTeamMember(memberToDelete.squareId);
+
+      await fetchTeamMembers(); // Refresh the list
+
+      // Close delete confirmation modal
+      setShowDeleteModal(false);
+
+      // Show deleted barber info modal with manual removal instructions
+      setDeletedBarberInfo({
+        name: `${memberToDelete.givenName} ${memberToDelete.familyName}`,
+        squareId: memberToDelete.squareId
+      });
+      setShowDeletedBarberInfo(true);
+
+      // Clear memberToDelete state
+      setMemberToDelete(null);
+    } catch (err) {
+      console.error('Error deleting team member:', err);
+      showToast(
+        `Failed to delete team member: ${err.response?.data?.error || err.message}`,
+        'error'
+      );
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  // Cancel delete action
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+    setMemberToDelete(null);
   };
 
   // Auto-sort handler based on Employment → Conversions → Order logic
@@ -261,8 +365,8 @@ const BarberManagement = () => {
       } else {
         errorMessage = `Auto-sort failed: ${err.message || 'Unknown error'}. Please try again.`;
       }
-      
-      alert(errorMessage);
+
+      showToast(errorMessage, 'error');
       
       // Revert local state on error
       await fetchTeamMembers();
@@ -310,6 +414,86 @@ const BarberManagement = () => {
       // Revert on error
       setOrderedTeamMembers(teamMembers);
     }
+  };
+
+  // New CRUD handlers
+  const handleCreateBarberSuccess = (createdBarber) => {
+    console.log('Barber created successfully:', createdBarber);
+    // Refresh the team members list
+    fetchTeamMembers();
+
+    // Store barber info and show service assignment modal
+    if (createdBarber?.data?.square) {
+      const barberName = `${createdBarber.data.square.given_name} ${createdBarber.data.square.family_name}`;
+      const barberSquareId = createdBarber.data.square.id;
+
+      setCreatedBarberInfo({
+        name: barberName,
+        squareId: barberSquareId
+      });
+      setShowServiceAssignmentInfo(true);
+    } else {
+      // Fallback to toast if data structure is unexpected
+      showToast('Barber created successfully!', 'success');
+    }
+  };
+
+  const handleShowServices = (member) => {
+    setSelectedMemberForServices(member);
+    setShowServiceModal(true);
+  };
+
+  const handleShowEditImage = (member) => {
+    setSelectedMemberForImage(member);
+    setShowEditImageModal(true);
+  };
+
+  const handleCloseEditImageModal = () => {
+    setShowEditImageModal(false);
+    setSelectedMemberForImage(null);
+  };
+
+  const handleEditImageSuccess = async () => {
+    await fetchTeamMembers(); // Refresh list to show updated image
+    showToast('Profile image updated successfully', 'success');
+  };
+
+  const handleCloseServiceModal = () => {
+    setSelectedMemberForServices(null);
+    setShowServiceModal(false);
+  };
+
+  const handleOpenServiceAssignmentInfo = (member) => {
+    setCreatedBarberInfo({
+      name: `${member.givenName} ${member.familyName}`,
+      squareId: member.squareId
+    });
+    setShowServiceAssignmentInfo(true);
+  };
+
+  const handleCloseServiceAssignmentInfo = () => {
+    setShowServiceAssignmentInfo(false);
+    setCreatedBarberInfo(null);
+  };
+
+  const handleCloseDeletedBarberInfo = () => {
+    setShowDeletedBarberInfo(false);
+    setDeletedBarberInfo(null);
+  };
+
+  const handleEditTeamMember = (member) => {
+    setSelectedMemberForEdit(member);
+    setShowEditTeamMemberModal(true);
+  };
+
+  const handleCloseEditTeamMemberModal = () => {
+    setShowEditTeamMemberModal(false);
+    setSelectedMemberForEdit(null);
+  };
+
+  const handleEditTeamMemberSuccess = async () => {
+    await fetchTeamMembers(); // Refresh list to show updated data
+    showToast('Team member updated successfully', 'success');
   };
 
   const getEmploymentBadge = (employmentType) => {
@@ -360,6 +544,13 @@ const BarberManagement = () => {
           </p>
         </div>
         <div className="flex gap-2 items-center">
+          <Button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2"
+          >
+            <UserPlus className="h-4 w-4" />
+            Create Barber
+          </Button>
           <Button 
             variant="outline" 
             onClick={handleAutoSort} 
@@ -599,12 +790,53 @@ const BarberManagement = () => {
                                       )}
                                     </td>
                                     <td className="p-4 align-middle text-center">
-                                      <div className="flex gap-1 justify-center">
+                                      <div className="flex gap-1 justify-center flex-wrap">
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => handleShowServices(member)}
+                                          className="h-8 px-3"
+                                          title="Manage Services"
+                                        >
+                                          <Settings className="h-3 w-3 mr-1" />
+                                          Services
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => handleShowEditImage(member)}
+                                          className="h-8 px-3"
+                                          title="Edit Profile Image"
+                                        >
+                                          <ImageIcon className="h-3 w-3 mr-1" />
+                                          Image
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => handleOpenServiceAssignmentInfo(member)}
+                                          className="h-8 px-3"
+                                          title="View Square Setup Instructions"
+                                        >
+                                          <Info className="h-3 w-3 mr-1" />
+                                          Setup
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => handleEditTeamMember(member)}
+                                          className="h-8 px-3"
+                                          title="Edit Team Member Information"
+                                        >
+                                          <Edit2 className="h-3 w-3 mr-1" />
+                                          Edit Info
+                                        </Button>
                                         <Button
                                           size="sm"
                                           variant="outline"
                                           onClick={() => handleEdit(member)}
                                           className="h-8 px-3"
+                                          title="Edit Employment Details"
                                         >
                                           {member.details ? (
                                             <><Edit2 className="h-3 w-3 mr-1" />Edit</>
@@ -612,16 +844,15 @@ const BarberManagement = () => {
                                             <><Plus className="h-3 w-3 mr-1" />Add</>
                                           )}
                                         </Button>
-                                        {member.details && (
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() => handleDelete(member.squareId)}
-                                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                                          >
-                                            <Trash2 className="h-3 w-3" />
-                                          </Button>
-                                        )}
+                                        <Button
+                                          size="sm"
+                                          variant="destructive"
+                                          onClick={() => handleDeleteTeamMember(member)}
+                                          className="h-8 w-8 p-0"
+                                          title="Delete Team Member (Services, Category, Square & Local DB)"
+                                        >
+                                          <Trash2 className="h-3 w-3" />
+                                        </Button>
                                       </div>
                                     </td>
                                   </>
@@ -659,6 +890,81 @@ const BarberManagement = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Create Barber Modal */}
+      <CreateBarberModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={handleCreateBarberSuccess}
+        teamService={teamService}
+        existingMembers={teamMembers}
+      />
+
+      {/* Service Management Modal */}
+      {selectedMemberForServices && (
+        <ServiceManagement
+          isOpen={showServiceModal}
+          onClose={handleCloseServiceModal}
+          teamMember={selectedMemberForServices}
+          teamService={teamService}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        memberName={memberToDelete ? `${memberToDelete.givenName} ${memberToDelete.familyName}` : ''}
+        isDeleting={isDeleting}
+      />
+
+      {/* Service Assignment Info Modal */}
+      {createdBarberInfo && (
+        <ServiceAssignmentInfoModal
+          isOpen={showServiceAssignmentInfo}
+          onClose={handleCloseServiceAssignmentInfo}
+          barberName={createdBarberInfo.name}
+          barberSquareId={createdBarberInfo.squareId}
+        />
+      )}
+
+      {/* Deleted Barber Info Modal */}
+      {deletedBarberInfo && (
+        <DeletedBarberInfoModal
+          isOpen={showDeletedBarberInfo}
+          onClose={handleCloseDeletedBarberInfo}
+          barberName={deletedBarberInfo.name}
+          barberSquareId={deletedBarberInfo.squareId}
+        />
+      )}
+
+      {/* Edit Image Modal */}
+      <EditImageModal
+        isOpen={showEditImageModal}
+        onClose={handleCloseEditImageModal}
+        onSuccess={handleEditImageSuccess}
+        teamService={teamService}
+        barber={selectedMemberForImage}
+      />
+
+      {/* Edit Team Member Modal */}
+      <EditTeamMemberModal
+        isOpen={showEditTeamMemberModal}
+        onClose={handleCloseEditTeamMemberModal}
+        onSuccess={handleEditTeamMemberSuccess}
+        teamService={teamService}
+        teamMember={selectedMemberForEdit}
+        existingMembers={teamMembers}
+      />
+
+      {/* Toast Notification */}
+      <Toast
+        message={toast.message}
+        isVisible={toast.isVisible}
+        onClose={hideToast}
+        type={toast.type}
+      />
     </div>
   );
 };
