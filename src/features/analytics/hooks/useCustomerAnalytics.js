@@ -3,10 +3,9 @@ import { analyticsService } from "../services/analyticsService";
 
 /**
  * Hook for managing customer analytics data
- * @param {Object} options - Query parameters
  * @returns {Object} Customer analytics data and operations
  */
-export function useCustomerAnalytics(options = {}) {
+export function useCustomerAnalytics() {
     const [customers, setCustomers] = useState([]);
     const [meta, setMeta] = useState(null);
     const [loading, setLoading] = useState(false);

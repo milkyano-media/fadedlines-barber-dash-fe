@@ -44,6 +44,7 @@ const BarberAnalyticsList = ({ barbers, filterParams = {} }) => {
             })
             .catch((err) => {
                 console.error("Failed to copy text: ", err);
+                // TODO: handle error
             });
     };
 

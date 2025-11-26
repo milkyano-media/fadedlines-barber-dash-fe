@@ -35,8 +35,7 @@ import EditImageModal from "./EditImageModal";
 import EditTeamMemberModal from "./EditTeamMemberModal";
 
 const BarberManagement = () => {
-    const { teamMembers, loading, error, fetchTeamMembers, updateTeamMemberDetail, deleteTeamMemberDetail } =
-        useTeamManagement();
+    const { teamMembers, loading, error, fetchTeamMembers, updateTeamMemberDetail } = useTeamManagement();
 
     // Hook for analytics data
     const { fetchBarberAnalytics } = useBarberAnalytics();
@@ -213,7 +212,7 @@ const BarberManagement = () => {
         setIsDeleting(true);
         try {
             // Delete services, category, deactivate in Square, and delete from local DB
-            const response = await teamService.deactivateTeamMember(memberToDelete.squareId);
+            await teamService.deactivateTeamMember(memberToDelete.squareId);
 
             await fetchTeamMembers(); // Refresh the list
 

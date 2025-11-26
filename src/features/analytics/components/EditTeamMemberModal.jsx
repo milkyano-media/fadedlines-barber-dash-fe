@@ -60,7 +60,7 @@ const EditTeamMemberModal = ({ isOpen, onClose, onSuccess, teamService, teamMemb
 
         switch (field) {
             case "givenName":
-            case "familyName":
+            case "familyName": {
                 // Check if name combination already exists
                 const fullName =
                     field === "givenName"
@@ -76,8 +76,9 @@ const EditTeamMemberModal = ({ isOpen, onClose, onSuccess, teamService, teamMemb
                     errorMessage = `A team member with the name "${fullName}" already exists`;
                 }
                 break;
+            }
 
-            case "emailAddress":
+            case "emailAddress": {
                 // Check if email already exists
                 const emailExists = otherMembers.some(
                     (member) => member.emailAddress?.toLowerCase() === value.toLowerCase(),
@@ -93,8 +94,9 @@ const EditTeamMemberModal = ({ isOpen, onClose, onSuccess, teamService, teamMemb
                     errorMessage = "Please enter a valid email address";
                 }
                 break;
+            }
 
-            case "phoneNumber":
+            case "phoneNumber": {
                 // Check if phone already exists
                 const phoneExists = otherMembers.some((member) => member.phoneNumber === value);
 
@@ -103,11 +105,12 @@ const EditTeamMemberModal = ({ isOpen, onClose, onSuccess, teamService, teamMemb
                 }
 
                 // Phone format validation (basic)
-                const phoneRegex = /^\+?[\d\s\-\(\)]+$/;
+                const phoneRegex = /^\+?[\d\s\-()]+$/;
                 if (!phoneRegex.test(value)) {
                     errorMessage = "Please enter a valid phone number";
                 }
                 break;
+            }
 
             default:
                 break;

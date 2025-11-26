@@ -3,10 +3,9 @@ import { barberAnalyticsService } from "../services/barberAnalyticsService";
 
 /**
  * Hook for managing barber analytics data
- * @param {Object} options - Query parameters
  * @returns {Object} Barber analytics data and operations
  */
-export function useBarberAnalytics(options = {}) {
+export function useBarberAnalytics() {
     const [barbers, setBarbers] = useState([]);
     const [meta, setMeta] = useState(null);
     const [loading, setLoading] = useState(false);

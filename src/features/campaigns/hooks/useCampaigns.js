@@ -1,12 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { campaignsService } from "../services/campaignsService";
 
 /**
  * Hook for managing campaigns data
- * @param {Object} options - Query parameters
  * @returns {Object} Campaigns data and operations
  */
-export function useCampaigns(options = {}) {
+export function useCampaigns() {
     const [campaigns, setCampaigns] = useState([]);
     const [meta, setMeta] = useState(null);
     const [loading, setLoading] = useState(false);

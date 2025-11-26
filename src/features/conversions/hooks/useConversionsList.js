@@ -1,12 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { conversionsService } from "../services/conversionsService";
 
 /**
  * Hook for managing conversions list data
- * @param {Object} options - Query parameters
  * @returns {Object} Conversions list data and operations
  */
-export function useConversionsList(options = {}) {
+export function useConversionsList() {
     const [conversions, setConversions] = useState([]);
     const [meta, setMeta] = useState(null);
     const [loading, setLoading] = useState(false); // Start with false since we won't fetch automatically

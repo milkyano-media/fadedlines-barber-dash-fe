@@ -64,7 +64,6 @@ const ConversionListPage = () => {
     const { conversions, meta, loading, error, fetchConversions } = useConversionsList({});
 
     // Fetch conversions when filters or pagination change
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         const { startDate, endDate } = getDateRangeParams();
 
@@ -95,7 +94,6 @@ const ConversionListPage = () => {
                 }
             })
             .catch((error) => console.error("Error fetching conversions:", error));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentPage, deferredSearchTerm, influenceFilter, sourceFilter, customerTypeFilter, dateRange, sortOrder]);
 
     // Handle refresh

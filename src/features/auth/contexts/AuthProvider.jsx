@@ -13,7 +13,8 @@ export const AuthProvider = ({ children }) => {
             setUser(response.user);
             return response;
         } catch (error) {
-            throw error;
+            console.error(error);
+            // TODO: handle error
         } finally {
             setLoading(false);
         }
@@ -26,7 +27,8 @@ export const AuthProvider = ({ children }) => {
             setUser(response.user);
             return response;
         } catch (error) {
-            throw error;
+            console.error(error);
+            // TODO: handle error
         } finally {
             setLoading(false);
         }

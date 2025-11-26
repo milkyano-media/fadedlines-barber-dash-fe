@@ -26,7 +26,7 @@ const EventsPage = () => {
     const [eventType, setEventType] = useState(EVENT_TYPES.ALL);
     const [dateRange, setDateRange] = useState(DATE_RANGES.LAST_30_DAYS);
     const [sortBy, setSortBy] = useState(SORT_OPTIONS.CREATED_AT_DESC);
-    const [showRegistrationEventsOnly, setShowRegistrationEventsOnly] = useState(false);
+    const [showRegistrationEventsOnly] = useState(false);
 
     // State for manual refresh status
     const [isRefreshing, setIsRefreshing] = useState(false);

@@ -251,7 +251,6 @@ const ComparisonModal = ({ isOpen, onClose, currentPeriod, sourceFilter }) => {
                 fetchComparisonData();
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         isOpen,
         comparisonRange,

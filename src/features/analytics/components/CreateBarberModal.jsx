@@ -74,7 +74,7 @@ const CreateBarberModal = ({ isOpen, onClose, onSuccess, teamService, existingMe
 
         switch (field) {
             case "givenName":
-            case "familyName":
+            case "familyName": {
                 // Check if name combination already exists
                 const fullName =
                     field === "givenName"
@@ -90,6 +90,7 @@ const CreateBarberModal = ({ isOpen, onClose, onSuccess, teamService, existingMe
                     errorMessage = `A barber named "${fullName}" already exists`;
                 }
                 break;
+            }
 
             case "emailAddress":
                 if (value.trim()) {
@@ -233,7 +234,7 @@ const CreateBarberModal = ({ isOpen, onClose, onSuccess, teamService, existingMe
                     return formData.chairRentalRate && parseFloat(formData.chairRentalRate) > 0;
                 }
                 return true;
-            case 3:
+            case 3: {
                 // Services step is optional - if user has services, they should be valid
                 const servicesWithContent = formData.services.filter((s) => s.name.trim());
                 return (
@@ -249,6 +250,7 @@ const CreateBarberModal = ({ isOpen, onClose, onSuccess, teamService, existingMe
                             parseFloat(service.price) > 0,
                     )
                 );
+            }
             default:
                 return true;
         }

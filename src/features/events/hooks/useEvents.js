@@ -56,7 +56,6 @@ export function useEvents(options = {}) {
     // Fetch data on initial load and when options change
     useEffect(() => {
         fetchEvents();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         options.page,
         options.eventName,

@@ -65,7 +65,6 @@ const CustomerAnalyticsPage = () => {
     const {
         summary: summaryStats,
         loading: summaryLoading,
-        error: summaryError,
         fetchCustomerAnalyticsSummary,
     } = useCustomerAnalyticsSummary();
 
@@ -130,6 +129,7 @@ const CustomerAnalyticsPage = () => {
             ]);
         } catch (err) {
             console.error("Error refreshing data:", err);
+            // TODO: handle error
         } finally {
             setIsRefreshing(false);
         }
