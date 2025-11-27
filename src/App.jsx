@@ -15,6 +15,11 @@ import EventsPage from "./features/events/EventsPage";
 import SyncEtlPage from "./features/sync-etl/SyncEtlPage";
 import CustomerAnalyticsPage from "./features/analytics/CustomerAnalyticsPage";
 import BarberAnalyticsPage from "./features/analytics/BarberAnalyticsPage";
+import ParametersLayout from "./features/parameters/ParametersLayout";
+import ThemeParameters from "./features/parameters/components/ThemeParameters";
+import BrandingParameters from "./features/parameters/components/BrandingParameters";
+import FeaturesParameters from "./features/parameters/components/FeaturesParameters";
+import GeneralParameters from "./features/parameters/components/GeneralParameters";
 
 // Route configuration array
 const routesConfig = [
@@ -57,6 +62,36 @@ const routesConfig = [
             {
                 path: "barbers",
                 element: <BarberAnalyticsPage />,
+            },
+        ],
+    },
+    {
+        path: "/parameters",
+        element: (
+            <ProtectedRoute>
+                <ParametersLayout />
+            </ProtectedRoute>
+        ),
+        children: [
+            {
+                index: true,
+                element: <Navigate to="/parameters/theme" replace />,
+            },
+            {
+                path: "theme",
+                element: <ThemeParameters />,
+            },
+            {
+                path: "branding",
+                element: <BrandingParameters />,
+            },
+            {
+                path: "features",
+                element: <FeaturesParameters />,
+            },
+            {
+                path: "general",
+                element: <GeneralParameters />,
             },
         ],
     },

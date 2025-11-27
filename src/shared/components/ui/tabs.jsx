@@ -1,14 +1,14 @@
 import * as React from "react";
 import { cn } from "@/lib/twUtils";
 
-const Tabs = React.forwardRef(({ className, value, onValueChange, ...props }, ref) => {
-    const [activeTab, setActiveTab] = React.useState(value || "");
+const Tabs = React.forwardRef(({ className, value, defaultValue, onValueChange, ...props }, ref) => {
+    const [activeTab, setActiveTab] = React.useState(value || defaultValue || "");
 
     React.useEffect(() => {
         if (value !== undefined && value !== activeTab) {
             setActiveTab(value);
         }
-    }, [value]);
+    }, [value, activeTab]);
 
     const handleValueChange = (newValue) => {
         setActiveTab(newValue);
@@ -79,7 +79,8 @@ const TabsTrigger = React.forwardRef(({ className, value, activeTab, onSelect, .
 ));
 TabsTrigger.displayName = "TabsTrigger";
 
-const TabsContent = React.forwardRef(({ className, value, activeTab, ...props }, ref) => (
+// eslint-disable-next-line no-unused-vars
+const TabsContent = React.forwardRef(({ className, value, activeTab, onValueChange, ...props }, ref) => (
     <div
         ref={ref}
         role="tabpanel"
