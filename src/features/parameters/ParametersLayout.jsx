@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation } from "react-router";
 import { useAuth } from "../auth/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogBody, DialogFooter, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { cn } from "@/lib/twUtils";
 import { useTheme } from "next-themes";
 import {
@@ -18,6 +19,8 @@ import {
     Sun,
     Menu,
     X,
+    CheckCircle2,
+    ArrowRight,
 } from "lucide-react";
 
 const ParametersLayout = () => {
@@ -25,6 +28,8 @@ const ParametersLayout = () => {
     const { theme, setTheme } = useTheme();
     const location = useLocation();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [showSaveModal, setShowSaveModal] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     // Navigation items for left sidebar
     const navItems = [
@@ -54,6 +59,21 @@ const ParametersLayout = () => {
         document.addEventListener("click", handleClickOutside);
         return () => document.removeEventListener("click", handleClickOutside);
     }, [mobileMenuOpen]);
+
+    // Handle save changes
+    const handleSaveChanges = () => {
+        setShowSaveModal(true);
+    };
+
+    // Confirm and save
+    const confirmSave = async () => {
+        setIsSaving(true);
+        // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        setIsSaving(false);
+        setShowSaveModal(false);
+        // TODO: Show success notification
+    };
 
     return (
         <div className="relative flex min-h-screen flex-col">
@@ -242,7 +262,7 @@ const ParametersLayout = () => {
                                     <RotateCcw className="h-4 w-4" />
                                     Reset to Defaults
                                 </Button>
-                                <Button className="flex items-center gap-2">
+                                <Button onClick={handleSaveChanges} className="flex items-center gap-2">
                                     <Save className="h-4 w-4" />
                                     Save Changes
                                 </Button>
@@ -270,6 +290,158 @@ const ParametersLayout = () => {
                     </div>
                 </main>
             </div>
+
+            {/* Save Confirmation Modal */}
+            <Dialog open={showSaveModal} onOpenChange={setShowSaveModal}>
+                <DialogContent onClose={() => setShowSaveModal(false)} className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Confirm Changes</DialogTitle>
+                        <DialogDescription>
+                            Please review the changes below before saving. These changes will affect all users.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {/* Changes Summary - Scrollable */}
+                    <DialogBody>
+                    <div className="space-y-4 pb-4">
+                        <div className="border rounded-lg p-4 bg-muted/50">
+                            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                                <Palette className="h-4 w-4" />
+                                Theme Changes
+                            </h3>
+                            <div className="space-y-2 text-sm">
+                                <div className="flex items-start gap-3">
+                                    <ArrowRight className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <div className="flex-1">
+                                        <span className="font-medium">Light Mode Primary Color:</span>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <div className="h-6 w-6 rounded border" style={{ backgroundColor: "#000000" }} />
+                                            <span className="text-muted-foreground">#000000</span>
+                                            <span className="text-muted-foreground">→</span>
+                                            <div className="h-6 w-6 rounded border" style={{ backgroundColor: "#7c3aed" }} />
+                                            <span className="text-primary font-medium">#7c3aed</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <ArrowRight className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <div className="flex-1">
+                                        <span className="font-medium">Dark Mode Background:</span>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <div className="h-6 w-6 rounded border" style={{ backgroundColor: "#0a0a0a" }} />
+                                            <span className="text-muted-foreground">#0a0a0a</span>
+                                            <span className="text-muted-foreground">→</span>
+                                            <div className="h-6 w-6 rounded border" style={{ backgroundColor: "#1e1b4b" }} />
+                                            <span className="text-primary font-medium">#1e1b4b</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="border rounded-lg p-4 bg-muted/50">
+                            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                                <Image className="h-4 w-4" />
+                                Branding Changes
+                            </h3>
+                            <div className="space-y-2 text-sm">
+                                <div className="flex items-start gap-3">
+                                    <ArrowRight className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <div className="flex-1">
+                                        <span className="font-medium">Application Logo:</span>
+                                        <div className="mt-1">
+                                            <span className="text-primary font-medium">new-logo.svg</span>
+                                            <span className="text-muted-foreground ml-2">(Updated)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="border rounded-lg p-4 bg-muted/50">
+                            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                                <ToggleLeft className="h-4 w-4" />
+                                Feature Flags
+                            </h3>
+                            <div className="space-y-2 text-sm">
+                                <div className="flex items-start gap-3">
+                                    <ArrowRight className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <div className="flex-1">
+                                        <span className="font-medium">Maintenance Mode:</span>
+                                        <div className="mt-1">
+                                            <span className="text-muted-foreground">Inactive</span>
+                                            <span className="text-muted-foreground mx-2">→</span>
+                                            <span className="text-destructive font-medium">Active</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <ArrowRight className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <div className="flex-1">
+                                        <span className="font-medium">Analytics Dashboard:</span>
+                                        <div className="mt-1">
+                                            <span className="text-muted-foreground">Enabled</span>
+                                            <span className="text-muted-foreground mx-2">→</span>
+                                            <span className="text-muted-foreground font-medium">Disabled</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="border rounded-lg p-4 bg-muted/50">
+                            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                                <Settings className="h-4 w-4" />
+                                General Settings
+                            </h3>
+                            <div className="space-y-2 text-sm">
+                                <div className="flex items-start gap-3">
+                                    <ArrowRight className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <div className="flex-1">
+                                        <span className="font-medium">Default Timezone:</span>
+                                        <div className="mt-1">
+                                            <span className="text-muted-foreground">UTC</span>
+                                            <span className="text-muted-foreground mx-2">→</span>
+                                            <span className="text-primary font-medium">America/New_York (ET)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Info Banner */}
+                        <div className="border rounded-lg p-3 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+                            <div className="flex items-start gap-2">
+                                <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-500 flex-shrink-0 mt-0.5" />
+                                <p className="text-xs text-blue-800 dark:text-blue-200">
+                                    All changes will be applied immediately after confirmation. Users may need to refresh their
+                                    browsers to see the updates.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    </DialogBody>
+
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowSaveModal(false)} disabled={isSaving}>
+                            Cancel
+                        </Button>
+                        <Button onClick={confirmSave} disabled={isSaving}>
+                            {isSaving ? (
+                                <>
+                                    <span className="animate-spin mr-2">⏳</span>
+                                    Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="h-4 w-4 mr-2" />
+                                    Confirm & Save
+                                </>
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
