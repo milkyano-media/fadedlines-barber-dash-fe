@@ -205,8 +205,6 @@ const EditTeamMemberModal = ({ isOpen, onClose, onSuccess, teamService, teamMemb
                 phoneNumber: formData.phoneNumber.trim(),
             });
 
-            console.log("✅ Team member updated successfully");
-
             // Call success callback
             if (onSuccess) {
                 onSuccess();

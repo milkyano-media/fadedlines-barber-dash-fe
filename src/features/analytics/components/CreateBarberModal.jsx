@@ -360,7 +360,6 @@ const CreateBarberModal = ({ isOpen, onClose, onSuccess, teamService, existingMe
             if (formData.profileImage) {
                 try {
                     await teamService.uploadProfileImage(teamMemberId, formData.profileImage);
-                    console.log("✅ Profile image uploaded successfully");
                 } catch (imageError) {
                     console.error("Failed to upload profile image:", imageError);
                     // Don't fail the whole operation if image upload fails
@@ -376,13 +375,10 @@ const CreateBarberModal = ({ isOpen, onClose, onSuccess, teamService, existingMe
                     formData.givenName,
                     formData.instagramHandle,
                 );
-                console.log("Created category response:", createdCategory);
-                console.log("Category data:", createdCategory.data);
+
                 categoryId = createdCategory.data.id; // Capture the category ID
-                console.log("Extracted categoryId:", categoryId);
 
                 // Add a small delay to ensure category is fully created in Square
-                console.log("Waiting for category to be fully processed...");
                 await new Promise((resolve) => setTimeout(resolve, 2000)); // 2 second delay
             }
 

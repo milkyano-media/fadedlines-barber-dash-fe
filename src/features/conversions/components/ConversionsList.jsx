@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import {
@@ -19,29 +19,6 @@ const ConversionsList = ({ conversions }) => {
     const [copiedId, setCopiedId] = useState(null);
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState("");
-
-    // Debug: Log conversions data structure to console
-    useEffect(() => {
-        if (conversions && conversions.length > 0) {
-            console.log("Conversion data example:", conversions[0]);
-            console.log("Campaign extracted:", extractCampaignName(conversions[0]));
-
-            // Analyze all conversions to check campaign info
-            conversions.forEach((conversion) => {
-                // First page_visit event with utm info
-                const pageVisitEvent = conversion.details?.events?.find((event) => event.eventName === "page_visit");
-
-                if (pageVisitEvent) {
-                    console.log(`Conversion ${conversion.id}:`, {
-                        campaignNameField: conversion.campaignName,
-                        extractedCampaign: extractCampaignName(conversion),
-                        utm: pageVisitEvent.utm,
-                        pageUrl: pageVisitEvent.pageUrl,
-                    });
-                }
-            });
-        }
-    }, [conversions]);
 
     // Function to shorten the booking ID for display purposes
     const shortenBookingId = (bookingId) => {

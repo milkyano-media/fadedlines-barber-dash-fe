@@ -253,11 +253,6 @@ const BarberManagement = () => {
             // Use the selected date range for auto-sort
             const { startDate, endDate } = getAutoSortDateRangeParams();
 
-            console.log("🔄 Auto-sort: Fetching analytics data with date range:", {
-                range: autoSortDateRange,
-                startDate,
-                endDate,
-            });
             const analyticsData = await fetchBarberAnalytics({
                 sortBy: "default",
                 sortDir: "desc",
@@ -267,14 +262,10 @@ const BarberManagement = () => {
                 page: 1,
             });
 
-            console.log("📊 Auto-sort: Received analytics data:", analyticsData);
-
             if (!analyticsData || !analyticsData.data) {
                 console.error("❌ Auto-sort: Analytics data is invalid:", analyticsData);
                 throw new Error("Failed to fetch analytics data for sorting");
             }
-
-            console.log("✅ Auto-sort: Analytics data valid, proceeding with sort...");
 
             // Create a map of barber names to their analytics data for conversion lookup
             const analyticsMap = new Map();
@@ -406,7 +397,6 @@ const BarberManagement = () => {
 
     // New CRUD handlers
     const handleCreateBarberSuccess = (createdBarber) => {
-        console.log("Barber created successfully:", createdBarber);
         // Refresh the team members list
         fetchTeamMembers();
 

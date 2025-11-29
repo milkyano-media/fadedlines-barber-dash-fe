@@ -73,7 +73,6 @@ const EditImageModal = ({ isOpen, onClose, onSuccess, teamService, barber }) => 
 
         try {
             await teamService.updateProfileImage(barber.squareId, selectedImage);
-            console.log("✅ Image updated successfully");
             onSuccess?.();
             handleClose();
         } catch (err) {
@@ -97,7 +96,6 @@ const EditImageModal = ({ isOpen, onClose, onSuccess, teamService, barber }) => 
 
         try {
             await teamService.deleteProfileImage(barber.squareId);
-            console.log("✅ Image deleted successfully");
             onSuccess?.();
             handleClose();
         } catch (err) {

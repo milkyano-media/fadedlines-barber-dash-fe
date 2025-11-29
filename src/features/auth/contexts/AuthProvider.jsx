@@ -45,8 +45,6 @@ export const AuthProvider = ({ children }) => {
             const token = authService.getToken();
             const userData = authService.getCurrentUser();
 
-            console.log("Initializing auth:", { token: !!token, userData: !!userData });
-
             if (token && userData) {
                 setUser(userData);
             } else {
