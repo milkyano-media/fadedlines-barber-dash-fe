@@ -1,118 +1,131 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sun, Moon, Palette } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { updateThemeColor, applyThemePreset } from "../store/parametersSlice";
+import { selectTheme } from "../store/selectors";
+
+// Color input component for reusability - defined outside to prevent re-creation
+const ColorInput = React.memo(({ label, value, onChange, description }) => (
+    <div className="space-y-3">
+        <label className="text-sm font-medium">{label}</label>
+        <div className="flex items-center gap-3">
+            <input
+                type="color"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="h-10 w-20 rounded-md border cursor-pointer"
+            />
+            <Input value={value} onChange={(e) => onChange(e.target.value)} placeholder={value} className="flex-1" />
+        </div>
+        <p className="text-xs text-muted-foreground">{description}</p>
+    </div>
+));
+
+ColorInput.displayName = "ColorInput";
 
 const ThemeParameters = () => {
-    // Light mode colors
-    const [lightPrimaryColor, setLightPrimaryColor] = useState("#000000");
-    const [lightSecondaryColor, setLightSecondaryColor] = useState("#64748b");
-    const [lightAccentColor, setLightAccentColor] = useState("#3b82f6");
-    const [lightBackgroundColor, setLightBackgroundColor] = useState("#ffffff");
-    const [lightForegroundColor, setLightForegroundColor] = useState("#0a0a0a");
+    const dispatch = useAppDispatch();
+    const theme = useAppSelector(selectTheme);
 
-    // Dark mode colors
-    const [darkPrimaryColor, setDarkPrimaryColor] = useState("#ffffff");
-    const [darkSecondaryColor, setDarkSecondaryColor] = useState("#94a3b8");
-    const [darkAccentColor, setDarkAccentColor] = useState("#60a5fa");
-    const [darkBackgroundColor, setDarkBackgroundColor] = useState("#0a0a0a");
-    const [darkForegroundColor, setDarkForegroundColor] = useState("#fafafa");
+    // Destructure theme colors for easier access
+    const {
+        light: {
+            primary: lightPrimaryColor,
+            secondary: lightSecondaryColor,
+            accent: lightAccentColor,
+            background: lightBackgroundColor,
+            foreground: lightForegroundColor,
+        },
+        dark: {
+            primary: darkPrimaryColor,
+            secondary: darkSecondaryColor,
+            accent: darkAccentColor,
+            background: darkBackgroundColor,
+            foreground: darkForegroundColor,
+        },
+    } = theme;
+
+    // Preset color schemes
+    const presets = {
+        light: {
+            default: {
+                primary: "#000000",
+                secondary: "#64748b",
+                accent: "#3b82f6",
+                background: "#ffffff",
+                foreground: "#0a0a0a",
+            },
+            purple: {
+                primary: "#7c3aed",
+                secondary: "#a78bfa",
+                accent: "#c084fc",
+                background: "#faf5ff",
+                foreground: "#1e1b4b",
+            },
+            emerald: {
+                primary: "#059669",
+                secondary: "#10b981",
+                accent: "#34d399",
+                background: "#f0fdf4",
+                foreground: "#064e3b",
+            },
+            red: {
+                primary: "#dc2626",
+                secondary: "#ef4444",
+                accent: "#f87171",
+                background: "#fef2f2",
+                foreground: "#7f1d1d",
+            },
+        },
+        dark: {
+            default: {
+                primary: "#ffffff",
+                secondary: "#94a3b8",
+                accent: "#60a5fa",
+                background: "#0a0a0a",
+                foreground: "#fafafa",
+            },
+            purple: {
+                primary: "#c084fc",
+                secondary: "#a78bfa",
+                accent: "#e9d5ff",
+                background: "#1e1b4b",
+                foreground: "#f5f3ff",
+            },
+            emerald: {
+                primary: "#34d399",
+                secondary: "#10b981",
+                accent: "#6ee7b7",
+                background: "#064e3b",
+                foreground: "#f0fdf4",
+            },
+            red: {
+                primary: "#f87171",
+                secondary: "#ef4444",
+                accent: "#fca5a5",
+                background: "#7f1d1d",
+                foreground: "#fef2f2",
+            },
+        },
+    };
 
     // Apply light mode preset
-    const applyLightPreset = (preset) => {
-        switch (preset) {
-            case "default":
-                setLightPrimaryColor("#000000");
-                setLightSecondaryColor("#64748b");
-                setLightAccentColor("#3b82f6");
-                setLightBackgroundColor("#ffffff");
-                setLightForegroundColor("#0a0a0a");
-                break;
-            case "purple":
-                setLightPrimaryColor("#7c3aed");
-                setLightSecondaryColor("#a78bfa");
-                setLightAccentColor("#c084fc");
-                setLightBackgroundColor("#faf5ff");
-                setLightForegroundColor("#1e1b4b");
-                break;
-            case "emerald":
-                setLightPrimaryColor("#059669");
-                setLightSecondaryColor("#10b981");
-                setLightAccentColor("#34d399");
-                setLightBackgroundColor("#f0fdf4");
-                setLightForegroundColor("#064e3b");
-                break;
-            case "red":
-                setLightPrimaryColor("#dc2626");
-                setLightSecondaryColor("#ef4444");
-                setLightAccentColor("#f87171");
-                setLightBackgroundColor("#fef2f2");
-                setLightForegroundColor("#7f1d1d");
-                break;
-            default:
-                break;
+    const applyLightPresetHandler = (presetName) => {
+        if (presets.light[presetName]) {
+            dispatch(applyThemePreset({ mode: "light", preset: presets.light[presetName] }));
         }
     };
 
     // Apply dark mode preset
-    const applyDarkPreset = (preset) => {
-        switch (preset) {
-            case "default":
-                setDarkPrimaryColor("#ffffff");
-                setDarkSecondaryColor("#94a3b8");
-                setDarkAccentColor("#60a5fa");
-                setDarkBackgroundColor("#0a0a0a");
-                setDarkForegroundColor("#fafafa");
-                break;
-            case "purple":
-                setDarkPrimaryColor("#c084fc");
-                setDarkSecondaryColor("#a78bfa");
-                setDarkAccentColor("#e9d5ff");
-                setDarkBackgroundColor("#1e1b4b");
-                setDarkForegroundColor("#f5f3ff");
-                break;
-            case "emerald":
-                setDarkPrimaryColor("#34d399");
-                setDarkSecondaryColor("#10b981");
-                setDarkAccentColor("#6ee7b7");
-                setDarkBackgroundColor("#064e3b");
-                setDarkForegroundColor("#f0fdf4");
-                break;
-            case "red":
-                setDarkPrimaryColor("#f87171");
-                setDarkSecondaryColor("#ef4444");
-                setDarkAccentColor("#fca5a5");
-                setDarkBackgroundColor("#7f1d1d");
-                setDarkForegroundColor("#fef2f2");
-                break;
-            default:
-                break;
+    const applyDarkPresetHandler = (presetName) => {
+        if (presets.dark[presetName]) {
+            dispatch(applyThemePreset({ mode: "dark", preset: presets.dark[presetName] }));
         }
     };
-
-    // Color input component for reusability
-    const ColorInput = ({ label, value, onChange, description }) => (
-        <div className="space-y-3">
-            <label className="text-sm font-medium">{label}</label>
-            <div className="flex items-center gap-3">
-                <input
-                    type="color"
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    className="h-10 w-20 rounded-md border cursor-pointer"
-                />
-                <Input
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    placeholder={value}
-                    className="flex-1"
-                />
-            </div>
-            <p className="text-xs text-muted-foreground">{description}</p>
-        </div>
-    );
 
     return (
         <div className="space-y-6">
@@ -146,31 +159,49 @@ const ThemeParameters = () => {
                                         <ColorInput
                                             label="Primary Color"
                                             value={lightPrimaryColor}
-                                            onChange={setLightPrimaryColor}
+                                            onChange={(value) =>
+                                                dispatch(
+                                                    updateThemeColor({ mode: "light", colorKey: "primary", value }),
+                                                )
+                                            }
                                             description="Main brand color for light mode"
                                         />
                                         <ColorInput
                                             label="Secondary Color"
                                             value={lightSecondaryColor}
-                                            onChange={setLightSecondaryColor}
+                                            onChange={(value) =>
+                                                dispatch(
+                                                    updateThemeColor({ mode: "light", colorKey: "secondary", value }),
+                                                )
+                                            }
                                             description="Supporting color for UI elements"
                                         />
                                         <ColorInput
                                             label="Accent Color"
                                             value={lightAccentColor}
-                                            onChange={setLightAccentColor}
+                                            onChange={(value) =>
+                                                dispatch(updateThemeColor({ mode: "light", colorKey: "accent", value }))
+                                            }
                                             description="Highlight color for interactive elements"
                                         />
                                         <ColorInput
                                             label="Background Color"
                                             value={lightBackgroundColor}
-                                            onChange={setLightBackgroundColor}
+                                            onChange={(value) =>
+                                                dispatch(
+                                                    updateThemeColor({ mode: "light", colorKey: "background", value }),
+                                                )
+                                            }
                                             description="Main background color"
                                         />
                                         <ColorInput
                                             label="Foreground Color"
                                             value={lightForegroundColor}
-                                            onChange={setLightForegroundColor}
+                                            onChange={(value) =>
+                                                dispatch(
+                                                    updateThemeColor({ mode: "light", colorKey: "foreground", value }),
+                                                )
+                                            }
                                             description="Main text color"
                                         />
                                     </div>
@@ -243,7 +274,7 @@ const ThemeParameters = () => {
                                         <Button
                                             variant="outline"
                                             className="h-auto py-3 flex-col gap-2"
-                                            onClick={() => applyLightPreset("default")}
+                                            onClick={() => applyLightPresetHandler("default")}
                                         >
                                             <div className="flex gap-1">
                                                 <div className="h-5 w-5 rounded bg-black" />
@@ -255,7 +286,7 @@ const ThemeParameters = () => {
                                         <Button
                                             variant="outline"
                                             className="h-auto py-3 flex-col gap-2"
-                                            onClick={() => applyLightPreset("purple")}
+                                            onClick={() => applyLightPresetHandler("purple")}
                                         >
                                             <div className="flex gap-1">
                                                 <div className="h-5 w-5 rounded bg-violet-600" />
@@ -267,7 +298,7 @@ const ThemeParameters = () => {
                                         <Button
                                             variant="outline"
                                             className="h-auto py-3 flex-col gap-2"
-                                            onClick={() => applyLightPreset("emerald")}
+                                            onClick={() => applyLightPresetHandler("emerald")}
                                         >
                                             <div className="flex gap-1">
                                                 <div className="h-5 w-5 rounded bg-emerald-600" />
@@ -279,7 +310,7 @@ const ThemeParameters = () => {
                                         <Button
                                             variant="outline"
                                             className="h-auto py-3 flex-col gap-2"
-                                            onClick={() => applyLightPreset("red")}
+                                            onClick={() => applyLightPresetHandler("red")}
                                         >
                                             <div className="flex gap-1">
                                                 <div className="h-5 w-5 rounded bg-red-600" />
@@ -302,31 +333,47 @@ const ThemeParameters = () => {
                                         <ColorInput
                                             label="Primary Color"
                                             value={darkPrimaryColor}
-                                            onChange={setDarkPrimaryColor}
+                                            onChange={(value) =>
+                                                dispatch(updateThemeColor({ mode: "dark", colorKey: "primary", value }))
+                                            }
                                             description="Main brand color for dark mode"
                                         />
                                         <ColorInput
                                             label="Secondary Color"
                                             value={darkSecondaryColor}
-                                            onChange={setDarkSecondaryColor}
+                                            onChange={(value) =>
+                                                dispatch(
+                                                    updateThemeColor({ mode: "dark", colorKey: "secondary", value }),
+                                                )
+                                            }
                                             description="Supporting color for UI elements"
                                         />
                                         <ColorInput
                                             label="Accent Color"
                                             value={darkAccentColor}
-                                            onChange={setDarkAccentColor}
+                                            onChange={(value) =>
+                                                dispatch(updateThemeColor({ mode: "dark", colorKey: "accent", value }))
+                                            }
                                             description="Highlight color for interactive elements"
                                         />
                                         <ColorInput
                                             label="Background Color"
                                             value={darkBackgroundColor}
-                                            onChange={setDarkBackgroundColor}
+                                            onChange={(value) =>
+                                                dispatch(
+                                                    updateThemeColor({ mode: "dark", colorKey: "background", value }),
+                                                )
+                                            }
                                             description="Main background color"
                                         />
                                         <ColorInput
                                             label="Foreground Color"
                                             value={darkForegroundColor}
-                                            onChange={setDarkForegroundColor}
+                                            onChange={(value) =>
+                                                dispatch(
+                                                    updateThemeColor({ mode: "dark", colorKey: "foreground", value }),
+                                                )
+                                            }
                                             description="Main text color"
                                         />
                                     </div>
@@ -399,7 +446,7 @@ const ThemeParameters = () => {
                                         <Button
                                             variant="outline"
                                             className="h-auto py-3 flex-col gap-2"
-                                            onClick={() => applyDarkPreset("default")}
+                                            onClick={() => applyDarkPresetHandler("default")}
                                         >
                                             <div className="flex gap-1">
                                                 <div className="h-5 w-5 rounded bg-white" />
@@ -411,7 +458,7 @@ const ThemeParameters = () => {
                                         <Button
                                             variant="outline"
                                             className="h-auto py-3 flex-col gap-2"
-                                            onClick={() => applyDarkPreset("purple")}
+                                            onClick={() => applyDarkPresetHandler("purple")}
                                         >
                                             <div className="flex gap-1">
                                                 <div className="h-5 w-5 rounded bg-violet-400" />
@@ -423,7 +470,7 @@ const ThemeParameters = () => {
                                         <Button
                                             variant="outline"
                                             className="h-auto py-3 flex-col gap-2"
-                                            onClick={() => applyDarkPreset("emerald")}
+                                            onClick={() => applyDarkPresetHandler("emerald")}
                                         >
                                             <div className="flex gap-1">
                                                 <div className="h-5 w-5 rounded bg-emerald-400" />
@@ -435,7 +482,7 @@ const ThemeParameters = () => {
                                         <Button
                                             variant="outline"
                                             className="h-auto py-3 flex-col gap-2"
-                                            onClick={() => applyDarkPreset("red")}
+                                            onClick={() => applyDarkPresetHandler("red")}
                                         >
                                             <div className="flex gap-1">
                                                 <div className="h-5 w-5 rounded bg-red-400" />

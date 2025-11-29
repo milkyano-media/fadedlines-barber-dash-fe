@@ -1,10 +1,16 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { updateGeneralSetting } from "../store/parametersSlice";
+import { selectGeneral } from "../store/selectors";
 
 const GeneralParameters = () => {
-    const [timezone, setTimezone] = useState("UTC");
+    const dispatch = useAppDispatch();
+    const general = useAppSelector(selectGeneral);
+
+    const { timezone, sessionTimeout, itemsPerPage, analyticsRetention, eventLogRetention } = general;
 
     return (
         <div className="space-y-6">
@@ -16,7 +22,10 @@ const GeneralParameters = () => {
                 <CardContent className="space-y-6">
                     <div className="space-y-3">
                         <label className="text-sm font-medium">Default Timezone</label>
-                        <Select value={timezone} onChange={(e) => setTimezone(e.target.value)}>
+                        <Select
+                            value={timezone}
+                            onChange={(e) => dispatch(updateGeneralSetting({ timezone: e.target.value }))}
+                        >
                             <option value="UTC">UTC (Coordinated Universal Time)</option>
                             <option value="America/New_York">Eastern Time (ET)</option>
                             <option value="America/Chicago">Central Time (CT)</option>
@@ -40,7 +49,14 @@ const GeneralParameters = () => {
 
                     <div className="space-y-3">
                         <label className="text-sm font-medium">Session Timeout (minutes)</label>
-                        <Input type="number" defaultValue="60" placeholder="60" />
+                        <Input
+                            type="number"
+                            value={sessionTimeout}
+                            onChange={(e) =>
+                                dispatch(updateGeneralSetting({ sessionTimeout: parseInt(e.target.value) || 0 }))
+                            }
+                            placeholder="60"
+                        />
                         <p className="text-xs text-muted-foreground">
                             Automatic logout after specified minutes of inactivity
                         </p>
@@ -48,7 +64,12 @@ const GeneralParameters = () => {
 
                     <div className="space-y-3">
                         <label className="text-sm font-medium">Items Per Page</label>
-                        <Select defaultValue="20">
+                        <Select
+                            value={itemsPerPage}
+                            onChange={(e) =>
+                                dispatch(updateGeneralSetting({ itemsPerPage: parseInt(e.target.value) || 20 }))
+                            }
+                        >
                             <option value="10">10 items</option>
                             <option value="20">20 items</option>
                             <option value="50">50 items</option>
@@ -69,7 +90,14 @@ const GeneralParameters = () => {
                 <CardContent className="space-y-6">
                     <div className="space-y-3">
                         <label className="text-sm font-medium">Analytics Data Retention (days)</label>
-                        <Input type="number" defaultValue="90" placeholder="90" />
+                        <Input
+                            type="number"
+                            value={analyticsRetention}
+                            onChange={(e) =>
+                                dispatch(updateGeneralSetting({ analyticsRetention: parseInt(e.target.value) || 0 }))
+                            }
+                            placeholder="90"
+                        />
                         <p className="text-xs text-muted-foreground">
                             Number of days to retain analytics and reporting data
                         </p>
@@ -77,7 +105,14 @@ const GeneralParameters = () => {
 
                     <div className="space-y-3">
                         <label className="text-sm font-medium">Event Log Retention (days)</label>
-                        <Input type="number" defaultValue="30" placeholder="30" />
+                        <Input
+                            type="number"
+                            value={eventLogRetention}
+                            onChange={(e) =>
+                                dispatch(updateGeneralSetting({ eventLogRetention: parseInt(e.target.value) || 0 }))
+                            }
+                            placeholder="30"
+                        />
                         <p className="text-xs text-muted-foreground">
                             Number of days to retain event logs before archival
                         </p>

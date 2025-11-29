@@ -1,15 +1,17 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { updateBranding } from "../store/parametersSlice";
+import { selectBranding } from "../store/selectors";
 
 const BrandingParameters = () => {
-    const [appName, setAppName] = useState("Barber Dashboard");
-    const [appLogo, setAppLogo] = useState("/logo.svg");
-    const [logoFileName, setLogoFileName] = useState("");
-    const [faviconUrl, setFaviconUrl] = useState("/favicon.ico");
-    const [faviconFileName, setFaviconFileName] = useState("");
+    const dispatch = useAppDispatch();
+    const branding = useAppSelector(selectBranding);
+
+    const { appName, appLogo, logoFileName, faviconUrl, faviconFileName } = branding;
 
     // Handle logo file upload
     const handleLogoUpload = (event) => {
@@ -17,8 +19,7 @@ const BrandingParameters = () => {
         if (file) {
             // Create a URL for preview
             const fileUrl = URL.createObjectURL(file);
-            setAppLogo(fileUrl);
-            setLogoFileName(file.name);
+            dispatch(updateBranding({ appLogo: fileUrl, logoFileName: file.name }));
         }
     };
 
@@ -28,21 +29,18 @@ const BrandingParameters = () => {
         if (file) {
             // Create a URL for preview
             const fileUrl = URL.createObjectURL(file);
-            setFaviconUrl(fileUrl);
-            setFaviconFileName(file.name);
+            dispatch(updateBranding({ faviconUrl: fileUrl, faviconFileName: file.name }));
         }
     };
 
     // Clear logo
     const clearLogo = () => {
-        setAppLogo("/logo.svg");
-        setLogoFileName("");
+        dispatch(updateBranding({ appLogo: "/logo.svg", logoFileName: "" }));
     };
 
     // Clear favicon
     const clearFavicon = () => {
-        setFaviconUrl("/favicon.ico");
-        setFaviconFileName("");
+        dispatch(updateBranding({ faviconUrl: "/favicon.ico", faviconFileName: "" }));
     };
 
     return (
@@ -57,12 +55,10 @@ const BrandingParameters = () => {
                     <label className="text-sm font-medium">Application Name</label>
                     <Input
                         value={appName}
-                        onChange={(e) => setAppName(e.target.value)}
+                        onChange={(e) => dispatch(updateBranding({ appName: e.target.value }))}
                         placeholder="Enter application name"
                     />
-                    <p className="text-xs text-muted-foreground">
-                        Displayed in the browser tab and dashboard header
-                    </p>
+                    <p className="text-xs text-muted-foreground">Displayed in the browser tab and dashboard header</p>
                 </div>
 
                 {/* Logo Upload */}

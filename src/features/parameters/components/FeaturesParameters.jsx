@@ -1,14 +1,17 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Info, Eye, EyeOff } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { toggleFeature } from "../store/parametersSlice";
+import { selectFeatures } from "../store/selectors";
 
 const FeaturesParameters = () => {
-    const [maintenanceMode, setMaintenanceMode] = useState(false);
-    const [showAnalytics, setShowAnalytics] = useState(true);
-    const [allowRegistration, setAllowRegistration] = useState(true);
-    const [darkModeEnabled, setDarkModeEnabled] = useState(true);
+    const dispatch = useAppDispatch();
+    const features = useAppSelector(selectFeatures);
+
+    const { maintenanceMode, showAnalytics, allowRegistration, darkModeEnabled } = features;
 
     return (
         <div className="space-y-6">
@@ -34,7 +37,7 @@ const FeaturesParameters = () => {
                         <Button
                             variant={maintenanceMode ? "destructive" : "outline"}
                             size="sm"
-                            onClick={() => setMaintenanceMode(!maintenanceMode)}
+                            onClick={() => dispatch(toggleFeature("maintenanceMode"))}
                             className="ml-4"
                         >
                             {maintenanceMode ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
@@ -58,7 +61,7 @@ const FeaturesParameters = () => {
                         <Button
                             variant={showAnalytics ? "default" : "outline"}
                             size="sm"
-                            onClick={() => setShowAnalytics(!showAnalytics)}
+                            onClick={() => dispatch(toggleFeature("showAnalytics"))}
                             className="ml-4"
                         >
                             {showAnalytics ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
@@ -82,7 +85,7 @@ const FeaturesParameters = () => {
                         <Button
                             variant={allowRegistration ? "default" : "outline"}
                             size="sm"
-                            onClick={() => setAllowRegistration(!allowRegistration)}
+                            onClick={() => dispatch(toggleFeature("allowRegistration"))}
                             className="ml-4"
                         >
                             {allowRegistration ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}
@@ -106,7 +109,7 @@ const FeaturesParameters = () => {
                         <Button
                             variant={darkModeEnabled ? "default" : "outline"}
                             size="sm"
-                            onClick={() => setDarkModeEnabled(!darkModeEnabled)}
+                            onClick={() => dispatch(toggleFeature("darkModeEnabled"))}
                             className="ml-4"
                         >
                             {darkModeEnabled ? <Eye className="h-4 w-4 mr-2" /> : <EyeOff className="h-4 w-4 mr-2" />}

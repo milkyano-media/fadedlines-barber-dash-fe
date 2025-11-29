@@ -8,10 +8,7 @@ const Dialog = ({ open, onOpenChange, children }) => {
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center">
             {/* Backdrop */}
-            <div
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-                onClick={() => onOpenChange(false)}
-            />
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => onOpenChange(false)} />
             {/* Content */}
             <div className="relative z-[201]">{children}</div>
         </div>
@@ -40,7 +37,10 @@ const DialogContent = React.forwardRef(({ className, children, onClose, ...props
 DialogContent.displayName = "DialogContent";
 
 const DialogHeader = ({ className, ...props }) => (
-    <div className={cn("flex flex-col space-y-1.5 text-center sm:text-left p-6 pb-4 flex-shrink-0", className)} {...props} />
+    <div
+        className={cn("flex flex-col space-y-1.5 text-center sm:text-left p-6 pb-4 flex-shrink-0", className)}
+        {...props}
+    />
 );
 DialogHeader.displayName = "DialogHeader";
 
@@ -50,7 +50,13 @@ const DialogBody = ({ className, ...props }) => (
 DialogBody.displayName = "DialogBody";
 
 const DialogFooter = ({ className, ...props }) => (
-    <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 p-6 pt-4 border-t flex-shrink-0", className)} {...props} />
+    <div
+        className={cn(
+            "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 p-6 pt-4 border-t flex-shrink-0",
+            className,
+        )}
+        {...props}
+    />
 );
 DialogFooter.displayName = "DialogFooter";
 
